@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(10x *)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "PowerShell(npm *)",
+      "PowerShell(npx @przeprogramowani/10x-cli list)",
+      "PowerShell(npx @przeprogramowani/10x-cli@latest get m1l1)",
+      "PowerShell(npx @przeprogramowani/10x-cli@latest get m1l1 --tool cursor)"
+    ]
+  }
+}
