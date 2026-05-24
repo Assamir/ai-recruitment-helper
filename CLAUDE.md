@@ -9,7 +9,7 @@ Bootstrap a greenfield project end-to-end with the **shaping chain**:
 ```
 
 The first three skills ship in this lesson; the last two are the next links in the chain.
-
+This file provides guidance to AI Agents when working with code in this repository: @AGENTS.md
 ### Task Router — Where to start
 
 | Skill | Use it when |

@@ -1,15 +1,19 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "10x-astro-starter",
-  "main": "@astrojs/cloudflare/entrypoints/server",
-  "compatibility_date": "2026-05-08",
-  "compatibility_flags": ["nodejs_compat"],
-  "assets": {
-    "binding": "ASSETS",
-    "directory": "./dist",
-    "not_found_handling": "404-page",
-  },
-  "observability": {
-    "enabled": true,
-  },
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "ai-recruiter",
+	"main": "@astrojs/cloudflare/entrypoints/server",
+	"compatibility_date": "2026-05-08",
+	// Free tier: 10ms CPU per invocation (sufficient for auth + page renders).
+	// CV analysis pipeline (FR-006) will need the $5/mo paid plan (30s CPU cap).
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"assets": {
+		"binding": "ASSETS",
+		"directory": "./dist",
+		"not_found_handling": "404-page",
+	},
+	"observability": {
+		"enabled": true,
+	},
 }
