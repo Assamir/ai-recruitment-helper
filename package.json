@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
+    "db:types": "npx supabase gen types typescript --linked --schema public > src/db/database.types.ts",
     "deploy": "astro build && wrangler deploy",
     "rollback": "wrangler rollback"
   },

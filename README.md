@@ -61,11 +61,14 @@ npm run dev
 ```md
 .
 ├── src/
+│ ├── db/ # Generated database types
 │ ├── layouts/ # Astro layouts
 │ ├── pages/ # Astro pages
 │ │ └── api/ # API endpoints
 │ ├── components/ # UI components (Astro & React)
 │ └── assets/ # Static assets
+├── supabase/
+│ └── migrations/ # Supabase SQL migrations
 ├── public/ # Public assets
 ├── wrangler.jsonc # Cloudflare Workers config
 ```
@@ -111,7 +114,33 @@ npx supabase stop
 
 The local Studio UI is available at `http://localhost:54323`.
 
-No database tables or migrations are required — this project uses Supabase Auth's built-in `auth.users` table only.
+### Database schema
+
+The project uses five tables in the `public` schema, managed via Supabase migrations in `supabase/migrations/`:
+
+| Table                | Purpose                                            |
+| -------------------- | -------------------------------------------------- |
+| `profiles`           | App-level user data, auto-populated on signup via trigger |
+| `job_profiles`       | Predefined QA role reference data (9 seeded profiles)    |
+| `candidates`         | Uploaded CVs (one row per upload)                        |
+| `analyses`           | Analysis runs linking candidate to job profile           |
+| `analysis_questions` | Individual generated interview questions per analysis    |
+
+Row-Level Security (RLS) is enabled on all tables. User-owned tables enforce per-user data isolation (`user_id = auth.uid()`). `job_profiles` is read-only for authenticated users.
+
+To apply migrations to a remote project:
+
+```bash
+npx supabase login
+npx supabase link --project-ref <project-ref>
+npx supabase db push
+```
+
+To regenerate TypeScript types after schema changes:
+
+```bash
+npm run db:types
+```
 
 ### Using a cloud Supabase project instead
 
