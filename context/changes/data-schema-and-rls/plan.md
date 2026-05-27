@@ -394,57 +394,57 @@ Not in scope for F-01. S-01 will be the first slice that exercises the schema th
 
 #### Automated
 
-- [x] 1.1 Migration applies cleanly to remote Supabase
-- [x] 1.2 No advisor warnings
-- [x] 1.3 Lint passes
-- [x] 1.4 Build passes
+- [x] 1.1 Migration applies cleanly to remote Supabase — a4e795f
+- [x] 1.2 No advisor warnings — a4e795f
+- [x] 1.3 Lint passes — a4e795f
+- [x] 1.4 Build passes — a4e795f
 
 #### Manual
 
-- [x] 1.5 All 5 tables visible in Supabase dashboard
-- [x] 1.6 RLS enabled on every table
-- [x] 1.7 Indexes exist in pg_indexes
-- [x] 1.8 New user signup creates profiles row
-- [x] 1.9 Cross-user data access rejected by RLS
+- [x] 1.5 All 5 tables visible in Supabase dashboard — a4e795f
+- [x] 1.6 RLS enabled on every table — a4e795f
+- [x] 1.7 Indexes exist in pg_indexes — a4e795f
+- [x] 1.8 New user signup creates profiles row — a4e795f
+- [x] 1.9 Cross-user data access rejected by RLS — a4e795f
 
 ### Phase 2: Seed Data
 
 #### Automated
 
-- [x] 2.1 Migration applies cleanly
-- [x] 2.2 job_profiles count = 9
+- [x] 2.1 Migration applies cleanly — a4e795f
+- [x] 2.2 job_profiles count = 9 — a4e795f
 
 #### Manual
 
-- [x] 2.3 Profile descriptions are meaningful and domain-accurate
-- [x] 2.4 expected_skills contain relevant QA skills per profile
-- [x] 2.5 Re-running migration does not duplicate profiles
+- [x] 2.3 Profile descriptions are meaningful and domain-accurate — a4e795f
+- [x] 2.4 expected_skills contain relevant QA skills per profile — a4e795f
+- [x] 2.5 Re-running migration does not duplicate profiles — a4e795f
 
 ### Phase 3: Type Generation & Client Wiring
 
 #### Automated
 
-- [x] 3.1 Type generation succeeds via npm run db:types
-- [x] 3.2 TypeScript compiles (astro sync + build)
-- [x] 3.3 Lint passes
-- [x] 3.4 Generated file exports Database type with all 5 tables
+- [x] 3.1 Type generation succeeds via npm run db:types — a4e795f
+- [x] 3.2 TypeScript compiles (astro sync + build) — a4e795f
+- [x] 3.3 Lint passes — a4e795f
+- [x] 3.4 Generated file exports Database type with all 5 tables — a4e795f
 
 #### Manual
 
-- [x] 3.5 IDE shows table name autocompletion on .from()
-- [x] 3.6 Tables<"candidates"> helper type resolves in IDE
+- [x] 3.5 IDE shows table name autocompletion on .from() — a4e795f
+- [x] 3.6 Tables<"candidates"> helper type resolves in IDE — a4e795f
 
 ### Phase 4: Verification & Cleanup
 
 #### Automated
 
-- [x] 4.1 Full build passes
-- [x] 4.2 Lint passes
-- [x] 4.3 Type generation is repeatable
+- [x] 4.1 Full build passes — a4e795f
+- [x] 4.2 Lint passes — a4e795f
+- [x] 4.3 Type generation is repeatable — a4e795f
 
 #### Manual
 
-- [x] 4.4 Sign up flow still works (trigger creates profile)
-- [x] 4.5 Sign in flow still works
-- [x] 4.6 Dashboard loads for authenticated user
-- [x] 4.7 README accurately reflects new database setup
+- [x] 4.4 Sign up flow still works (trigger creates profile) — a4e795f
+- [x] 4.5 Sign in flow still works — a4e795f
+- [x] 4.6 Dashboard loads for authenticated user — a4e795f
+- [x] 4.7 README accurately reflects new database setup — a4e795f
