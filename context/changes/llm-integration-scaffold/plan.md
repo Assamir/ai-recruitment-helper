@@ -474,7 +474,7 @@ Not in scope for F-02. S-01 will be the first slice that exercises the full anal
 
 #### Manual
 
-- [x] 3.3 LM Studio running: health endpoint returns 200 with timing
+- [x] 3.3 LM Studio running: health endpoint returns 200 with timing — b3d8d11
 - [ ] 3.4 LM Studio stopped: health endpoint returns 502
 - [ ] 3.5 No auth: health endpoint returns 401 JSON
 - [ ] 3.6 No LLM config: health endpoint returns 503
@@ -495,13 +495,13 @@ Not in scope for F-02. S-01 will be the first slice that exercises the full anal
 
 #### Automated
 
-- [x] 5.1 Full build passes
-- [x] 5.2 All tests pass
-- [x] 5.3 Lint passes
+- [x] 5.1 Full build passes — b3d8d11
+- [x] 5.2 All tests pass — b3d8d11
+- [x] 5.3 Lint passes — b3d8d11
 
 #### Manual
 
 - [ ] 5.4 Health endpoint on wrangler dev --remote returns timing under 60s
 - [ ] 5.5 Health endpoint on local dev returns 200 with LM Studio
 - [ ] 5.6 Console logs visible via wrangler tail
-- [x] 5.7 AGENTS.md documents the LLM module
+- [x] 5.7 AGENTS.md documents the LLM module — b3d8d11
