@@ -456,21 +456,21 @@ Not in scope for F-02. S-01 will be the first slice that exercises the full anal
 
 #### Automated
 
-- [x] 2.1 Build passes
-- [x] 2.2 Lint passes
+- [x] 2.1 Build passes — e878931
+- [x] 2.2 Lint passes — e878931
 
 #### Manual
 
-- [x] 2.3 IDE shows correct type inference on createLLMModel
-- [x] 2.4 IDE shows correct type inference on completeLLM
-- [x] 2.5 Imports from @/lib/llm resolve all exports
+- [x] 2.3 IDE shows correct type inference on createLLMModel — e878931
+- [x] 2.4 IDE shows correct type inference on completeLLM — e878931
+- [x] 2.5 Imports from @/lib/llm resolve all exports — e878931
 
 ### Phase 3: Viability Test API Route
 
 #### Automated
 
-- [ ] 3.1 Build passes
-- [ ] 3.2 Lint passes
+- [x] 3.1 Build passes
+- [x] 3.2 Lint passes
 
 #### Manual
 
