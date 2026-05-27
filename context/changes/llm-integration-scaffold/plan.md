@@ -441,29 +441,29 @@ Not in scope for F-02. S-01 will be the first slice that exercises the full anal
 
 #### Automated
 
-- [x] 1.1 Dependencies install cleanly
-- [x] 1.2 Astro sync succeeds
-- [x] 1.3 Build passes
-- [x] 1.4 Lint passes
-- [x] 1.5 Vitest runs (exits 0)
+- [x] 1.1 Dependencies install cleanly — 2568248
+- [x] 1.2 Astro sync succeeds — 2568248
+- [x] 1.3 Build passes — 2568248
+- [x] 1.4 Lint passes — 2568248
+- [x] 1.5 Vitest runs (exits 0) — 2568248
 
 #### Manual
 
-- [x] 1.6 astro:env/server exports all 5 env vars without type errors
-- [x] 1.7 .env.example documents all env vars
+- [x] 1.6 astro:env/server exports all 5 env vars without type errors — 2568248
+- [x] 1.7 .env.example documents all env vars — 2568248
 
 ### Phase 2: LLM Client Module
 
 #### Automated
 
-- [ ] 2.1 Build passes
-- [ ] 2.2 Lint passes
+- [x] 2.1 Build passes
+- [x] 2.2 Lint passes
 
 #### Manual
 
-- [ ] 2.3 IDE shows correct type inference on createLLMModel
-- [ ] 2.4 IDE shows correct type inference on completeLLM
-- [ ] 2.5 Imports from @/lib/llm resolve all exports
+- [x] 2.3 IDE shows correct type inference on createLLMModel
+- [x] 2.4 IDE shows correct type inference on completeLLM
+- [x] 2.5 Imports from @/lib/llm resolve all exports
 
 ### Phase 3: Viability Test API Route
 
