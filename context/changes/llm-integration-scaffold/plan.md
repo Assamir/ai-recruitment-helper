@@ -469,8 +469,8 @@ Not in scope for F-02. S-01 will be the first slice that exercises the full anal
 
 #### Automated
 
-- [x] 3.1 Build passes
-- [x] 3.2 Lint passes
+- [x] 3.1 Build passes — 49c1e09
+- [x] 3.2 Lint passes — 49c1e09
 
 #### Manual
 
@@ -483,13 +483,13 @@ Not in scope for F-02. S-01 will be the first slice that exercises the full anal
 
 #### Automated
 
-- [ ] 4.1 All tests pass
-- [ ] 4.2 No lint errors in test files
+- [x] 4.1 All tests pass
+- [x] 4.2 No lint errors in test files
 
 #### Manual
 
-- [ ] 4.3 Test output shows meaningful names and pass/fail
-- [ ] 4.4 Test count matches expectations (12-18 assertions)
+- [x] 4.3 Test output shows meaningful names and pass/fail
+- [x] 4.4 Test count matches expectations (12-18 assertions)
 
 ### Phase 5: Workers Viability Verification & Documentation
 
