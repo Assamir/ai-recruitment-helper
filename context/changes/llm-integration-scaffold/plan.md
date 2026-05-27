@@ -474,7 +474,7 @@ Not in scope for F-02. S-01 will be the first slice that exercises the full anal
 
 #### Manual
 
-- [ ] 3.3 LM Studio running: health endpoint returns 200 with timing
+- [x] 3.3 LM Studio running: health endpoint returns 200 with timing
 - [ ] 3.4 LM Studio stopped: health endpoint returns 502
 - [ ] 3.5 No auth: health endpoint returns 401 JSON
 - [ ] 3.6 No LLM config: health endpoint returns 503
@@ -483,25 +483,25 @@ Not in scope for F-02. S-01 will be the first slice that exercises the full anal
 
 #### Automated
 
-- [x] 4.1 All tests pass
-- [x] 4.2 No lint errors in test files
+- [x] 4.1 All tests pass — 18365d7
+- [x] 4.2 No lint errors in test files — 18365d7
 
 #### Manual
 
-- [x] 4.3 Test output shows meaningful names and pass/fail
-- [x] 4.4 Test count matches expectations (12-18 assertions)
+- [x] 4.3 Test output shows meaningful names and pass/fail — 18365d7
+- [x] 4.4 Test count matches expectations (12-18 assertions) — 18365d7
 
 ### Phase 5: Workers Viability Verification & Documentation
 
 #### Automated
 
-- [ ] 5.1 Full build passes
-- [ ] 5.2 All tests pass
-- [ ] 5.3 Lint passes
+- [x] 5.1 Full build passes
+- [x] 5.2 All tests pass
+- [x] 5.3 Lint passes
 
 #### Manual
 
 - [ ] 5.4 Health endpoint on wrangler dev --remote returns timing under 60s
 - [ ] 5.5 Health endpoint on local dev returns 200 with LM Studio
 - [ ] 5.6 Console logs visible via wrangler tail
-- [ ] 5.7 AGENTS.md documents the LLM module
+- [x] 5.7 AGENTS.md documents the LLM module

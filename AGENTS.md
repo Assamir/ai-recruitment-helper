@@ -5,7 +5,7 @@ AI Recruitment Helper is a web application for QA recruitment built with Astro 6
 ## Hard Rules
 
 - Never write to `context/archive/`. Archived changes are immutable.
-- Never commit `.env` files. Copy `@.env.example` and populate `SUPABASE_URL` and `SUPABASE_KEY` locally.
+- Never commit `.env` files. Copy `@.env.example` and populate `SUPABASE_URL`, `SUPABASE_KEY`, and LLM vars locally.
 - All changes must pass lint and build before merging — CI enforces both on push/PR to `master`.
 - Node version: 22.14.0 (pinned in `@.nvmrc`). CI injects `SUPABASE_URL` and `SUPABASE_KEY` from GitHub secrets.
 
@@ -30,7 +30,7 @@ Supabase DB migrations must be backward-compatible (additive only: new columns w
 
 ## Project Structure
 
-Single-package Astro app. Source lives in `src/` with `components/{auth,ui}/`, `layouts/`, `lib/`, `pages/{auth,api}/`, `styles/`, and `middleware.ts` (auth route guard). Project context documents live in `context/foundation/` — see `@context/foundation/prd.md` for product requirements. Path alias `@/*` maps to `./src/*` in `@tsconfig.json`.
+Single-package Astro app. Source lives in `src/` with `components/{auth,ui}/`, `layouts/`, `lib/`, `pages/{auth,api}/`, `styles/`, and `middleware.ts` (auth route guard). Project context documents live in `context/foundation/` — see `@context/foundation/prd.md` for product requirements. Path alias `@/*` maps to `./src/*` in `@tsconfig.json`. Unit tests live in `tests/` at the project root.
 
 ## Build, Test, and Development Commands
 
@@ -42,7 +42,21 @@ Single-package Astro app. Source lives in `src/` with `components/{auth,ui}/`, `
 - `npm run deploy` — build and deploy to Cloudflare Workers production
 - `npm run rollback` — revert to the previous Worker version
 
-No test framework is configured. There is no `npm test` script.
+- `npm run test` — run Vitest unit tests
+- `npm run test:watch` — run Vitest in watch mode
+
+## LLM Integration
+
+The LLM client module lives at `src/lib/llm/`. It supports two providers switchable via the `LLM_PROVIDER` env var:
+
+- `lmstudio` (default) — local LM Studio at `http://localhost:1234/v1`, no API key needed
+- `openrouter` — cloud provider, requires `OPENROUTER_API_KEY`
+
+Key files: `client.ts` (provider factory + `completeLLM` service), `config.ts` (Astro env reader), `types.ts` (Zod schemas, defaults), `errors.ts` (typed error hierarchy). All env vars (`OPENROUTER_API_KEY`, `LLM_PROVIDER`, `LLM_MODEL`) are declared `optional: true` in `@astro.config.mjs` — the build passes without them. For production Workers, set secrets via `npx wrangler secret put <KEY>`.
+
+The viability test endpoint at `POST /api/llm/health` sends a synthetic CV through the LLM and returns timing metrics. It requires authentication (returns 401 JSON without it).
+
+`getLLMConfig()` returns `null` when the selected provider's credentials are missing (same pattern as `createClient()` for Supabase). Every call site must handle `null`.
 
 ## Coding Style & Naming Conventions
 

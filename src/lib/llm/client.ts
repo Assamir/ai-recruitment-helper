@@ -33,6 +33,7 @@ interface CompleteLLMOptions<T extends z.ZodType> {
   prompt: string;
   systemPrompt?: string;
   timeoutMs?: number;
+  useStructuredOutput?: boolean;
 }
 
 interface CompleteLLMResult<T> {
@@ -40,10 +41,23 @@ interface CompleteLLMResult<T> {
   timing: LLMTimingMetrics;
 }
 
+function extractJSON(text: string): unknown {
+  const fenced = /```(?:json)?\s*([\s\S]*?)```/.exec(text);
+  if (fenced) return JSON.parse(fenced[1].trim()) as unknown;
+
+  const braceStart = text.indexOf("{");
+  const braceEnd = text.lastIndexOf("}");
+  if (braceStart !== -1 && braceEnd > braceStart) {
+    return JSON.parse(text.slice(braceStart, braceEnd + 1)) as unknown;
+  }
+
+  return JSON.parse(text) as unknown;
+}
+
 export async function completeLLM<T extends z.ZodType>(
   options: CompleteLLMOptions<T>,
 ): Promise<CompleteLLMResult<z.infer<T>>> {
-  const { model, schema, prompt, systemPrompt, timeoutMs = DEFAULT_TIMEOUT_MS } = options;
+  const { model, schema, prompt, systemPrompt, timeoutMs = DEFAULT_TIMEOUT_MS, useStructuredOutput = false } = options;
   const controller = new AbortController();
   const timer = setTimeout(() => {
     controller.abort();
@@ -54,13 +68,33 @@ export async function completeLLM<T extends z.ZodType>(
   try {
     const llmStart = performance.now();
 
-    const result = await generateText({
-      model,
-      output: Output.object({ schema }),
-      prompt,
-      system: systemPrompt,
-      abortSignal: controller.signal,
-    });
+    let data: z.infer<T>;
+
+    if (useStructuredOutput) {
+      const result = await generateText({
+        model,
+        output: Output.object({ schema }),
+        prompt,
+        system: systemPrompt,
+        abortSignal: controller.signal,
+      });
+      data = result.output as z.infer<T>;
+    } else {
+      const jsonPrompt = `${prompt}\n\nRespond ONLY with a valid JSON object. No markdown, no explanation.`;
+      const result = await generateText({
+        model,
+        prompt: jsonPrompt,
+        system: systemPrompt,
+        abortSignal: controller.signal,
+      });
+
+      const raw = extractJSON(result.text);
+      const parsed = schema.safeParse(raw);
+      if (!parsed.success) {
+        throw new LLMParseError(`Response JSON does not match schema: ${JSON.stringify(parsed.error)}`);
+      }
+      data = parsed.data;
+    }
 
     const llmEnd = performance.now();
     const parseEnd = performance.now();
@@ -82,8 +116,10 @@ export async function completeLLM<T extends z.ZodType>(
       }),
     );
 
-    return { data: result.output as z.infer<T>, timing };
+    return { data, timing };
   } catch (error: unknown) {
+    if (error instanceof LLMParseError) throw error;
+
     const totalEnd = performance.now();
     const elapsed = Math.round(totalEnd - totalStart);
     const message = error instanceof Error ? error.message : String(error);

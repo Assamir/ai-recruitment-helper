@@ -30,8 +30,8 @@ export const POST: APIRoute = async (context) => {
       model,
       schema: HealthCheckResponseSchema,
       systemPrompt:
-        "You are a QA recruitment analyst. Analyze the CV against the job profile. Return a brief summary and count the number of anomalies (timeline contradictions, vague claims, missing skills, or red flags) you detect.",
-      prompt: `Analyze this CV against the job profile.\n\nCV:\n${SYNTHETIC_CV_TEXT}\n\nJob Profile:\n${SYNTHETIC_JOB_PROFILE}`,
+        'You are a QA recruitment analyst. You ALWAYS respond with a JSON object and nothing else. The JSON must have exactly two fields: "summary" (a string with a brief analysis) and "anomaly_count" (a number counting anomalies like timeline contradictions, vague claims, missing skills, or red flags).',
+      prompt: `Analyze this CV against the job profile. Respond with JSON only: {"summary": "...", "anomaly_count": N}\n\nCV:\n${SYNTHETIC_CV_TEXT}\n\nJob Profile:\n${SYNTHETIC_JOB_PROFILE}`,
     });
 
     return jsonResponse(
