@@ -25,6 +25,7 @@ export type Database = {
           job_profile_id: string | null
           match_summary: string | null
           project_context: string | null
+          raw_response: string | null
           status: string
           user_id: string
         }
@@ -38,6 +39,7 @@ export type Database = {
           job_profile_id?: string | null
           match_summary?: string | null
           project_context?: string | null
+          raw_response?: string | null
           status?: string
           user_id: string
         }
@@ -51,6 +53,7 @@ export type Database = {
           job_profile_id?: string | null
           match_summary?: string | null
           project_context?: string | null
+          raw_response?: string | null
           status?: string
           user_id?: string
         }
@@ -119,6 +122,7 @@ export type Database = {
           file_name: string | null
           id: string
           linkedin_text: string | null
+          pii_map: Json | null
           user_id: string
         }
         Insert: {
@@ -127,6 +131,7 @@ export type Database = {
           file_name?: string | null
           id?: string
           linkedin_text?: string | null
+          pii_map?: Json | null
           user_id: string
         }
         Update: {
@@ -135,6 +140,7 @@ export type Database = {
           file_name?: string | null
           id?: string
           linkedin_text?: string | null
+          pii_map?: Json | null
           user_id?: string
         }
         Relationships: []

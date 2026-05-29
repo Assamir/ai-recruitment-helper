@@ -582,10 +582,10 @@ Create the analysis results page (`/dashboard/[id]`) with a 4-stage progress ste
 
 #### Automated
 
-- [ ] 1.1 Migration applies cleanly
-- [ ] 1.2 Type regeneration includes new columns
-- [ ] 1.3 Unit tests pass for CV parser
-- [ ] 1.4 Lint passes
+- [x] 1.1 Migration applies cleanly
+- [x] 1.2 Type regeneration includes new columns
+- [x] 1.3 Unit tests pass for CV parser
+- [x] 1.4 Lint passes
 
 #### Manual
 
