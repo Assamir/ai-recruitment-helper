@@ -1,21 +1,37 @@
 ---
 import Layout from "@/layouts/Layout.astro";
+import { createClient } from "@/lib/supabase";
+import AnalysisView from "@/components/analysis/AnalysisView";
 
 const { id } = Astro.params;
+
+if (!id) {
+  return Astro.redirect("/dashboard");
+}
+
+const supabase = createClient(Astro.request.headers, Astro.cookies);
+
+const initialStatus = supabase
+  ? (
+      await supabase
+        .from("analyses")
+        .select("status")
+        .eq("id", id)
+        .single()
+    ).data?.status ?? "parsing"
+  : "parsing";
 ---
 
 <Layout title="Analysis — QA Recruiter">
   <div class="bg-cosmic min-h-screen p-6">
     <div class="mx-auto max-w-3xl">
       <div class="mb-6">
-        <a href="/dashboard" class="text-sm text-blue-100/50 transition-colors hover:text-blue-100/80"> ← Dashboard </a>
+        <a href="/dashboard" class="text-sm text-blue-100/50 transition-colors hover:text-blue-100/80">
+          ← Dashboard
+        </a>
       </div>
-      <div
-        id="analysis-root"
-        data-analysis-id={id}
-        class="rounded-2xl border border-white/10 bg-white/5 p-8 text-center text-sm text-blue-100/60 backdrop-blur-xl"
-      >
-        Loading analysis…
+      <div class="rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-xl">
+        <AnalysisView analysisId={id} initialStatus={initialStatus} client:load />
       </div>
     </div>
   </div>
