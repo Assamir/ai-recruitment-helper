@@ -16,6 +16,10 @@ export function createLLMModel(config: LLMConfig): LanguageModel | null {
       return openrouter(config.model);
     }
     case "lmstudio": {
+      // eslint-disable-next-line no-console
+      console.warn(
+        "[LLM] lmstudio provider selected — only functional in local development (localhost is unreachable on Cloudflare Workers)",
+      );
       const lmstudio = createOpenAICompatible({
         name: "lmstudio",
         baseURL: LMSTUDIO_BASE_URL,
@@ -78,6 +82,9 @@ export async function completeLLM<T extends z.ZodType>(
         system: systemPrompt,
         abortSignal: controller.signal,
       });
+      if (!result.output) {
+        throw new LLMParseError("Model did not return structured output");
+      }
       data = result.output as z.infer<T>;
     } else {
       const jsonPrompt = `${prompt}\n\nRespond ONLY with a valid JSON object. No markdown, no explanation.`;
@@ -130,7 +137,7 @@ export async function completeLLM<T extends z.ZodType>(
       throw new LLMTimeoutError(`LLM request timed out after ${timeoutMs}ms`);
     }
 
-    if (error instanceof Error && error.message.includes("JSON")) {
+    if (error instanceof SyntaxError) {
       // eslint-disable-next-line no-console
       console.error(
         JSON.stringify({ event: "llm_completion", status: "parse_error", elapsed_ms: elapsed, error: message }),

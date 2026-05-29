@@ -422,6 +422,14 @@ Not in scope for F-02. S-01 will be the first slice that exercises the full anal
 - Adding Vitest does not affect the existing build or deploy pipeline — tests are a dev-only concern
 - No existing tests to break — this is the first test setup
 
+## Addenda
+
+### A1 — completeLLM uses generateText instead of generateObject (2026-05-28)
+
+The plan specified wrapping `generateObject()` for structured output. During implementation, the open risk identified in the plan-brief materialized: Zod v4 compatibility with `generateObject` was uncertain. The implementer proactively built the fallback path (manual JSON extraction via `generateText`) and made it the default, with `generateObject`-style output available via an opt-in `useStructuredOutput` flag.
+
+This deviation is accepted. The approach works across models that don't support native structured output, and the viability test passed with real LLM calls. The `extractJSON` helper is inherently more fragile than SDK-native structured output, so S-01 should evaluate switching to `useStructuredOutput: true` as the default once Zod v4 compatibility is confirmed.
+
 ## References
 
 - Roadmap F-02: `context/foundation/roadmap.md` — LLM integration scaffold definition
@@ -476,7 +484,7 @@ Not in scope for F-02. S-01 will be the first slice that exercises the full anal
 
 - [x] 3.3 LM Studio running: health endpoint returns 200 with timing — b3d8d11
 - [ ] 3.4 LM Studio stopped: health endpoint returns 502
-- [ ] 3.5 No auth: health endpoint returns 401 JSON
+- [x] 3.5 No auth: health endpoint returns 401 JSON — verified 2026-05-28
 - [ ] 3.6 No LLM config: health endpoint returns 503
 
 ### Phase 4: Unit Tests
@@ -502,6 +510,6 @@ Not in scope for F-02. S-01 will be the first slice that exercises the full anal
 #### Manual
 
 - [ ] 5.4 Health endpoint on wrangler dev --remote returns timing under 60s
-- [ ] 5.5 Health endpoint on local dev returns 200 with LM Studio
+- [x] 5.5 Health endpoint on local dev returns 200 with LM Studio — verified 2026-05-28 (12.8s, lmstudio/gemma-4-e4b)
 - [ ] 5.6 Console logs visible via wrangler tail
 - [x] 5.7 AGENTS.md documents the LLM module — b3d8d11
