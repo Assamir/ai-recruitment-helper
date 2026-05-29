@@ -1,0 +1,31 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { createClient } from "@/lib/supabase";
+import AnalysisForm from "@/components/analysis/AnalysisForm";
+
+const supabase = createClient(Astro.request.headers, Astro.cookies);
+
+const profiles = supabase
+  ? ((
+      await supabase
+        .from("job_profiles")
+        .select("id, name, seniority_level, description")
+        .order("name")
+        .order("seniority_level")
+    ).data ?? [])
+  : [];
+---
+
+<Layout title="New Analysis — QA Recruiter">
+  <div class="bg-cosmic min-h-screen p-6">
+    <div class="mx-auto max-w-2xl">
+      <div class="mb-6 flex items-center gap-3">
+        <a href="/dashboard" class="text-sm text-blue-100/50 transition-colors hover:text-blue-100/80"> ← Dashboard </a>
+      </div>
+      <h1 class="mb-6 bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-2xl font-bold text-transparent">
+        New CV Analysis
+      </h1>
+      <AnalysisForm profiles={profiles} client:load />
+    </div>
+  </div>
+</Layout>

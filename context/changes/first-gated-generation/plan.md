@@ -610,18 +610,18 @@ Create the analysis results page (`/dashboard/[id]`) with a 4-stage progress ste
 
 #### Automated
 
-- [x] 3.1 Schema unit tests pass
-- [x] 3.2 Prompt builder unit tests pass
-- [x] 3.3 Build succeeds
-- [x] 3.4 Lint passes
+- [x] 3.1 Schema unit tests pass — 15ed675
+- [x] 3.2 Prompt builder unit tests pass — 15ed675
+- [x] 3.3 Build succeeds — 15ed675
+- [x] 3.4 Lint passes — 15ed675
 
 #### Manual
 
 - [ ] 3.5 POST /api/analysis returns analysis_id within 2 seconds
 - [ ] 3.6 Status endpoint shows stage progression
 - [ ] 3.7 Results endpoint returns categorized questions
-- [x] 3.8 No auth → 401 JSON response
-- [x] 3.9 No file or text → 400 JSON response
+- [x] 3.8 No auth → 401 JSON response — 15ed675
+- [x] 3.9 No file or text → 400 JSON response — 15ed675
 - [ ] 3.10 LLM timeout → analysis status = 'failed'
 - [ ] 3.11 Corrupt file → 400 error returned immediately
 
