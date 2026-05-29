@@ -582,10 +582,10 @@ Create the analysis results page (`/dashboard/[id]`) with a 4-stage progress ste
 
 #### Automated
 
-- [x] 1.1 Migration applies cleanly
-- [x] 1.2 Type regeneration includes new columns
-- [x] 1.3 Unit tests pass for CV parser
-- [x] 1.4 Lint passes
+- [x] 1.1 Migration applies cleanly — c8a108e
+- [x] 1.2 Type regeneration includes new columns — c8a108e
+- [x] 1.3 Unit tests pass for CV parser — c8a108e
+- [x] 1.4 Lint passes — c8a108e
 
 #### Manual
 
@@ -597,14 +597,14 @@ Create the analysis results page (`/dashboard/[id]`) with a 4-stage progress ste
 
 #### Automated
 
-- [ ] 2.1 Unit tests pass for anonymizer pipeline
-- [ ] 2.2 Unit tests pass for regex patterns
-- [ ] 2.3 Lint passes
+- [x] 2.1 Unit tests pass for anonymizer pipeline
+- [x] 2.2 Unit tests pass for regex patterns
+- [x] 2.3 Lint passes
 
 #### Manual
 
-- [ ] 2.4 Anonymizer output is readable with clear placeholders on synthetic CV
-- [ ] 2.5 No structured PII leaks in anonymized text
+- [x] 2.4 Anonymizer output is readable with clear placeholders on synthetic CV
+- [x] 2.5 No structured PII leaks in anonymized text
 
 ### Phase 3: Analysis Pipeline — API Routes + LLM Prompt
 
