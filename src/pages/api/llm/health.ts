@@ -2,13 +2,7 @@ import type { APIRoute } from "astro";
 import { getLLMConfig, createLLMModel, completeLLM, HealthCheckResponseSchema } from "@/lib/llm";
 import { LLMConnectionError, LLMTimeoutError, LLMParseError } from "@/lib/llm";
 import { SYNTHETIC_CV_TEXT, SYNTHETIC_JOB_PROFILE } from "@/lib/llm/test-data";
-
-function jsonResponse(body: Record<string, unknown>, status: number): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "Content-Type": "application/json" },
-  });
-}
+import { jsonResponse } from "@/lib/api/response";
 
 export const POST: APIRoute = async (context) => {
   if (!context.locals.user) {

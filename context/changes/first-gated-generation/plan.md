@@ -597,31 +597,31 @@ Create the analysis results page (`/dashboard/[id]`) with a 4-stage progress ste
 
 #### Automated
 
-- [x] 2.1 Unit tests pass for anonymizer pipeline
-- [x] 2.2 Unit tests pass for regex patterns
-- [x] 2.3 Lint passes
+- [x] 2.1 Unit tests pass for anonymizer pipeline — 2ef3c9c
+- [x] 2.2 Unit tests pass for regex patterns — 2ef3c9c
+- [x] 2.3 Lint passes — 2ef3c9c
 
 #### Manual
 
-- [x] 2.4 Anonymizer output is readable with clear placeholders on synthetic CV
-- [x] 2.5 No structured PII leaks in anonymized text
+- [x] 2.4 Anonymizer output is readable with clear placeholders on synthetic CV — 2ef3c9c
+- [x] 2.5 No structured PII leaks in anonymized text — 2ef3c9c
 
 ### Phase 3: Analysis Pipeline — API Routes + LLM Prompt
 
 #### Automated
 
-- [ ] 3.1 Schema unit tests pass
-- [ ] 3.2 Prompt builder unit tests pass
-- [ ] 3.3 Build succeeds
-- [ ] 3.4 Lint passes
+- [x] 3.1 Schema unit tests pass
+- [x] 3.2 Prompt builder unit tests pass
+- [x] 3.3 Build succeeds
+- [x] 3.4 Lint passes
 
 #### Manual
 
 - [ ] 3.5 POST /api/analysis returns analysis_id within 2 seconds
 - [ ] 3.6 Status endpoint shows stage progression
 - [ ] 3.7 Results endpoint returns categorized questions
-- [ ] 3.8 No auth → 401 JSON response
-- [ ] 3.9 No file or text → 400 JSON response
+- [x] 3.8 No auth → 401 JSON response
+- [x] 3.9 No file or text → 400 JSON response
 - [ ] 3.10 LLM timeout → analysis status = 'failed'
 - [ ] 3.11 Corrupt file → 400 error returned immediately
 
