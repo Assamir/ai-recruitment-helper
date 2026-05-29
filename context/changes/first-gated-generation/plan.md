@@ -31,9 +31,9 @@ Build the north-star pipeline that proves QA-specific CV auditing surfaces inter
 
 - `wrangler.jsonc` compatibility date `2026-05-08` is recent enough that `formdata_parser_supports_files` should be included by default — verify early with `wrangler dev --remote`
 - `createClient(requestHeaders, cookies)` returns typed Supabase client; the pipeline can reuse it in `waitUntil()` since JWT from request cookies remains valid for the ~25s pipeline duration
-- The `analyses` UPDATE RLS policy restricts changes to `status`, `match_summary`, `error_message`, `completed_at` — the pipeline can update status without accidentally overwriting `user_id` or `candidate_id`
+- The `analyses` UPDATE RLS policy restricts changes to **own rows only** (auth.uid() = user_id) — it does not restrict columns. Pipeline UPDATE statements must explicitly target only `status`, `match_summary`, `error_message`, and `completed_at` to avoid accidentally overwriting `user_id` or `candidate_id`
 - `analysis_questions` only allows INSERT and SELECT (no UPDATE/DELETE) — questions are immutable once written
-- Astro Cloudflare adapter exposes `context.locals.runtime.ctx.waitUntil()` for background processing after response
+- Astro 6 Cloudflare adapter exposes `context.locals.cfContext.waitUntil()` for background processing after response (the Astro 5 `locals.runtime.ctx` API was removed in @astrojs/cloudflare v13)
 - Current `dashboard.astro` must be moved to `dashboard/index.astro` to support sub-routes (`/dashboard/new`, `/dashboard/[id]`)
 
 ## Desired End State
@@ -63,7 +63,7 @@ A logged-in recruiter visits `/dashboard`, sees their analysis history (or an em
 
 ## Implementation Approach
 
-The pipeline is split into a synchronous front-half (file parsing + DB record creation) and an asynchronous back-half (anonymization + LLM analysis + result storage) using Workers' `ctx.waitUntil()`. This lets the API return an `analysis_id` immediately so the client can navigate to the results page and start polling for progress. The back-half updates the analysis status in the database at each stage, which the polling endpoint reads.
+The pipeline is split into a synchronous front-half (file parsing + DB record creation) and an asynchronous back-half (anonymization + LLM analysis + result storage) using `context.locals.cfContext.waitUntil()` (Astro 6 Cloudflare adapter). This lets the API return an `analysis_id` immediately so the client can navigate to the results page and start polling for progress. The back-half updates the analysis status in the database at each stage, which the polling endpoint reads.
 
 Five pure-logic modules are introduced: CV parser, PII anonymizer, analysis schema, prompt builder, and a shared API response utility. Each is independently testable. The frontend adds three new Astro pages with React islands for the interactive components.
 
@@ -71,7 +71,7 @@ Five pure-logic modules are introduced: CV parser, PII anonymizer, analysis sche
 
 ### Timing & lifecycle
 
-The `POST /api/analysis` route must return the `analysis_id` to the client BEFORE the LLM call (10-25s). The synchronous part handles file parsing (<1s) and DB record creation (<500ms), then delegates the rest to `ctx.waitUntil()`. The Supabase client created from request cookies is captured in the `waitUntil()` closure — the JWT remains valid for the pipeline duration (~25s). Cookie-writing (`setAll`) is unused in the background; only DB reads/writes happen.
+The `POST /api/analysis` route must return the `analysis_id` to the client BEFORE the LLM call (10-25s). The synchronous part handles file parsing (<1s) and DB record creation (<500ms), then delegates the rest to `context.locals.cfContext.waitUntil()`. The Supabase client created from request cookies is captured in the `waitUntil()` closure — the JWT remains valid for the pipeline duration (~25s). Cookie-writing (`setAll`) is unused in the background; only DB reads/writes happen.
 
 ### State sequencing
 
@@ -280,15 +280,23 @@ Define the Zod analysis response schema, build the QA expert system prompt and p
 
 **Contract**: Exports `jsonResponse(body: Record<string, unknown>, status: number): Response` with `Content-Type: application/json` header. The health endpoint is updated to import from this shared location.
 
-#### 4. Analysis pipeline route
+#### 4. Extend App.Locals type for cfContext
+
+**File**: `src/env.d.ts`
+
+**Intent**: Declare the `cfContext` property on `App.Locals` so TypeScript recognizes `context.locals.cfContext.waitUntil()` in API routes. The Astro 6 Cloudflare adapter populates this at runtime but doesn't auto-generate the type.
+
+**Contract**: Add `cfContext: import('@cloudflare/workers-types').ExecutionContext;` to the `App.Locals` interface alongside the existing `user` field.
+
+#### 5. Analysis pipeline route
 
 **File**: `src/pages/api/analysis/index.ts`
 
 **Intent**: The main pipeline entry point. Receives a multipart form with CV file (or text) and job profile ID. Parses the file, creates DB records, then delegates the analysis pipeline to `waitUntil()` for background processing. Returns the `analysis_id` immediately so the client can start polling.
 
-**Contract**: `POST /api/analysis`. Accepts `multipart/form-data` with fields: `file` (File, optional), `cv_text` (string, optional — paste fallback), `job_profile_id` (string, required). At least one of `file` or `cv_text` must be present. Returns `{ analysis_id: string }` on success (201), or error JSON (401 unauthorized, 400 validation, 503 service unavailable). Background pipeline updates analysis status through stages and catches errors to set `status='failed'`.
+**Contract**: `POST /api/analysis`. Accepts `multipart/form-data` with fields: `file` (File, optional), `cv_text` (string, optional — paste fallback), `job_profile_id` (string, required), `candidate_id` (string, optional — retry shortcut). At least one of `file`, `cv_text`, or `candidate_id` must be present. When `candidate_id` is provided, the server reads the stored `cv_text` from the existing candidate record (skipping file parsing) and creates a new analysis linked to the same candidate. Returns `{ analysis_id: string }` on success (201), or error JSON (401 unauthorized, 400 validation, 503 service unavailable). Background pipeline updates analysis status through stages and catches errors to set `status='failed'`.
 
-#### 5. Status polling route
+#### 6. Status polling route
 
 **File**: `src/pages/api/analysis/[id]/status.ts`
 
@@ -296,15 +304,15 @@ Define the Zod analysis response schema, build the QA expert system prompt and p
 
 **Contract**: `GET /api/analysis/[id]/status`. Returns `{ status: string, match_summary?: string, error_message?: string }` (200), or 401/404 JSON errors. RLS ensures only the analysis owner can read status.
 
-#### 6. Full results route
+#### 7. Full results route
 
 **File**: `src/pages/api/analysis/[id]/index.ts`
 
 **Intent**: Returns the complete analysis results — metadata, questions, candidate info, and profile info — for rendering the results page.
 
-**Contract**: `GET /api/analysis/[id]`. Returns `{ analysis: {...}, questions: [...], candidate: {...}, profile: {...} }` (200), or 401/404 JSON errors. Questions are ordered by `sort_order`. Profile includes `name`, `description`, and `expected_skills`.
+**Contract**: `GET /api/analysis/[id]`. Returns `{ analysis: {...}, questions: [...], candidate: { id, file_name }, profile: { id, name, description, expected_skills } }` (200), or 401/404 JSON errors. Questions are ordered by `sort_order`. The `candidate.id` is needed by the retry flow to pass as `candidate_id` to POST /api/analysis.
 
-#### 7. Job profiles listing route
+#### 8. Job profiles listing route
 
 **File**: `src/pages/api/profiles.ts`
 
@@ -312,7 +320,7 @@ Define the Zod analysis response schema, build the QA expert system prompt and p
 
 **Contract**: `GET /api/profiles`. Returns `{ profiles: Array<{ id, name, seniority_level, description }> }` (200) or 401 JSON error. Ordered by `name`, then `seniority_level`.
 
-#### 8. Refactor health endpoint imports
+#### 9. Refactor health endpoint imports
 
 **File**: `src/pages/api/llm/health.ts`
 
@@ -320,7 +328,7 @@ Define the Zod analysis response schema, build the QA expert system prompt and p
 
 **Contract**: Behavior unchanged. Delete the local `jsonResponse` definition, import from `@/lib/api/response`.
 
-#### 9. Unit tests for analysis schema
+#### 10. Unit tests for analysis schema
 
 **File**: `tests/lib/analysis/schema.test.ts`
 
@@ -328,7 +336,7 @@ Define the Zod analysis response schema, build the QA expert system prompt and p
 
 **Contract**: Tests cover: valid response parses successfully, missing `match_summary` rejected, invalid category value rejected, `suggested_answer: null` accepted, empty questions array accepted, extra fields stripped.
 
-#### 10. Unit tests for prompt builder
+#### 11. Unit tests for prompt builder
 
 **File**: `tests/lib/analysis/prompt.test.ts`
 
@@ -363,7 +371,7 @@ Define the Zod analysis response schema, build the QA expert system prompt and p
 
 ### Overview
 
-Replace the placeholder dashboard with an analysis history list page, create a new analysis form page with file upload (drag-and-drop + picker), collapsible paste-CV-text fallback, and job profile dropdown selector. Add the supporting `GET /api/profiles` data route.
+Replace the placeholder dashboard with an analysis history list page, create a new analysis form page with file upload (drag-and-drop + picker), collapsible paste-CV-text fallback, and job profile dropdown selector. The `GET /api/profiles` route built in Phase 3 provides the data for the dropdown.
 
 ### Changes Required:
 
@@ -489,7 +497,7 @@ Create the analysis results page (`/dashboard/[id]`) with a 4-stage progress ste
 
 **Intent**: When analysis status is `'failed'`, show the error message inline on the results page with a "Retry Analysis" button that re-submits the same CV and profile to `POST /api/analysis`.
 
-**Contract**: Integrated into `AnalysisView`. On retry, creates a new analysis (new `POST /api/analysis` with the same inputs). Navigates to the new analysis URL on success. The retry re-uses the original CV text stored in the candidate record rather than requiring the user to re-upload.
+**Contract**: Integrated into `AnalysisView`. On retry, creates a new analysis via `POST /api/analysis` with `candidate_id` (from the failed analysis's candidate) and the same `job_profile_id`. The server reads stored CV text from the candidate record — no re-upload required. Navigates to the new analysis URL on success.
 
 ### Success Criteria:
 
