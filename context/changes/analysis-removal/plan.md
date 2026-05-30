@@ -240,28 +240,28 @@ Adding RLS policies is additive and backward-compatible per `AGENTS.md`. `wrangl
 
 #### Automated
 
-- [x] 2.1 Unit tests for `shouldDeleteCandidate` (0→true, 1→false, >1→false)
-- [x] 2.2 `npm run lint` passes
-- [x] 2.3 `npx astro sync && npm run build` passes
+- [x] 2.1 Unit tests for `shouldDeleteCandidate` (0→true, 1→false, >1→false) — d4a13e2
+- [x] 2.2 `npm run lint` passes — d4a13e2
+- [x] 2.3 `npx astro sync && npm run build` passes — d4a13e2
 
 #### Manual
 
-- [x] 2.4 DELETE own analysis → 200, analysis + questions gone
-- [x] 2.5 Candidate deleted only when no other analysis references it (retry-path check)
-- [x] 2.6 DELETE another user's analysis → 404, no change
-- [x] 2.7 401 without session; 503 with DB unconfigured
-- [x] 2.8 Deleting an in-progress analysis → 200, no surfaced pipeline errors
+- [x] 2.4 DELETE own analysis → 200, analysis + questions gone — d4a13e2
+- [x] 2.5 Candidate deleted only when no other analysis references it (retry-path check) — d4a13e2
+- [x] 2.6 DELETE another user's analysis → 404, no change — d4a13e2
+- [x] 2.7 401 without session; 503 with DB unconfigured — d4a13e2
+- [x] 2.8 Deleting an in-progress analysis → 200, no surfaced pipeline errors — d4a13e2
 
 ### Phase 3: Dashboard card delete UI
 
 #### Automated
 
-- [ ] 3.1 `npx astro sync && npm run build` passes
-- [ ] 3.2 `npm run lint` passes
+- [x] 3.1 `npx astro sync && npm run build` passes
+- [x] 3.2 `npm run lint` passes
 
 #### Manual
 
-- [ ] 3.3 Delete control present; card body still navigates, button click does not
-- [ ] 3.4 Cancel confirm → intact; confirm → card removed after reload
-- [ ] 3.5 Deleting the last analysis shows the empty state
-- [ ] 3.6 Failed delete surfaces an inline error and keeps the card
+- [x] 3.3 Delete control present; card body still navigates, button click does not
+- [x] 3.4 Cancel confirm → intact; confirm → card removed after reload
+- [x] 3.5 Deleting the last analysis shows the empty state
+- [x] 3.6 Failed delete surfaces an inline error and keeps the card
