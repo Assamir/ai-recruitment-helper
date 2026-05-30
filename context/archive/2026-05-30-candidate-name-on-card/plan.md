@@ -212,40 +212,40 @@ Additive nullable columns only — backward-compatible per `AGENTS.md`. `wrangle
 
 #### Automated
 
-- [ ] 1.1 Migration applies cleanly against local Supabase
-- [ ] 1.2 `npx astro sync && npm run build` passes (types compile)
-- [ ] 1.3 `npm run lint` passes
+- [x] 1.1 Migration applies cleanly against local Supabase — 82647bb
+- [x] 1.2 `npx astro sync && npm run build` passes (types compile) — 82647bb
+- [x] 1.3 `npm run lint` passes — 82647bb
 
 #### Manual
 
-- [ ] 1.4 `first_name` / `last_name` exist on `candidates`, nullable, default null
-- [ ] 1.5 Existing `candidates` rows unaffected
+- [x] 1.4 `first_name` / `last_name` exist on `candidates`, nullable, default null — 82647bb
+- [x] 1.5 Existing `candidates` rows unaffected — 82647bb
 
 ### Phase 2: Capture & persist name at ingest
 
 #### Automated
 
-- [ ] 2.1 Unit tests for `splitFullName` cover two/three+/single/empty inputs
-- [ ] 2.2 Unit test for `extractCandidateName` extract+split and null cases
-- [ ] 2.3 `npm run lint` passes
-- [ ] 2.4 `npx astro sync && npm run build` passes
+- [x] 2.1 Unit tests for `splitFullName` cover two/three+/single/empty inputs — 1c05719
+- [x] 2.2 Unit test for `extractCandidateName` extract+split and null cases — 1c05719
+- [x] 2.3 `npm run lint` passes — 1c05719
+- [x] 2.4 `npx astro sync && npm run build` passes — 1c05719
 
 #### Manual
 
-- [ ] 2.5 Blank fields + CV header name → extracted first/last persisted
-- [ ] 2.6 Explicit form name overrides the heuristic
-- [ ] 2.7 No detectable name + blank fields → both columns null
-- [ ] 2.8 Name absent from anonymized text / LLM request
+- [x] 2.5 Blank fields + CV header name → extracted first/last persisted — 1c05719
+- [x] 2.6 Explicit form name overrides the heuristic — 1c05719
+- [x] 2.7 No detectable name + blank fields → both columns null — 1c05719
+- [x] 2.8 Name absent from anonymized text / LLM request — 1c05719
 
 ### Phase 3: Show name on the dashboard card
 
 #### Automated
 
-- [ ] 3.1 `npx astro sync && npm run build` passes
-- [ ] 3.2 `npm run lint` passes
+- [x] 3.1 `npx astro sync && npm run build` passes — 73fc756
+- [x] 3.2 `npm run lint` passes — 73fc756
 
 #### Manual
 
-- [ ] 3.3 Card shows `"First Last"` when a name is stored
-- [ ] 3.4 Card falls back to filename / `"Pasted CV"` when no name
-- [ ] 3.5 No `pii_map` / extra raw PII exposed on the page
+- [x] 3.3 Card shows `"First Last"` when a name is stored — 73fc756
+- [x] 3.4 Card falls back to filename / `"Pasted CV"` when no name — 73fc756
+- [x] 3.5 No `pii_map` / extra raw PII exposed on the page — 73fc756
