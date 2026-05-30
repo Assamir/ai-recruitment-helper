@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { User } from "lucide-react";
 import { FileUpload } from "./FileUpload";
 import { ProfileSelector } from "./ProfileSelector";
+import { FormField } from "@/components/auth/FormField";
 
 interface Profile {
   id: string;
@@ -17,6 +19,8 @@ export default function AnalysisForm({ profiles }: AnalysisFormProps) {
   const [file, setFile] = useState<File | null>(null);
   const [cvText, setCvText] = useState("");
   const [profileId, setProfileId] = useState<string | null>(null);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,6 +42,8 @@ export default function AnalysisForm({ profiles }: AnalysisFormProps) {
     try {
       const body = new FormData();
       body.append("job_profile_id", profileId);
+      if (firstName.trim()) body.append("first_name", firstName.trim());
+      if (lastName.trim()) body.append("last_name", lastName.trim());
       if (file) {
         body.append("file", file);
       } else {
@@ -70,6 +76,25 @@ export default function AnalysisForm({ profiles }: AnalysisFormProps) {
       className="space-y-6 rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl"
     >
       <FileUpload file={file} onFileChange={setFile} cvText={cvText} onCvTextChange={setCvText} />
+
+      <div className="grid grid-cols-2 gap-3">
+        <FormField
+          id="first_name"
+          label="First name (optional)"
+          value={firstName}
+          onChange={setFirstName}
+          placeholder="Jane"
+          icon={<User className="size-4" />}
+        />
+        <FormField
+          id="last_name"
+          label="Last name (optional)"
+          value={lastName}
+          onChange={setLastName}
+          placeholder="Smith"
+          icon={<User className="size-4" />}
+        />
+      </div>
 
       <ProfileSelector profiles={profiles} selectedId={profileId} onChange={setProfileId} />
 
