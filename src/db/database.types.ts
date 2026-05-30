@@ -115,7 +115,9 @@ export interface Database {
           created_at: string;
           cv_text: string | null;
           file_name: string | null;
+          first_name: string | null;
           id: string;
+          last_name: string | null;
           linkedin_text: string | null;
           pii_map: Json | null;
           user_id: string;
@@ -124,7 +126,9 @@ export interface Database {
           created_at?: string;
           cv_text?: string | null;
           file_name?: string | null;
+          first_name?: string | null;
           id?: string;
+          last_name?: string | null;
           linkedin_text?: string | null;
           pii_map?: Json | null;
           user_id: string;
@@ -133,7 +137,9 @@ export interface Database {
           created_at?: string;
           cv_text?: string | null;
           file_name?: string | null;
+          first_name?: string | null;
           id?: string;
+          last_name?: string | null;
           linkedin_text?: string | null;
           pii_map?: Json | null;
           user_id?: string;

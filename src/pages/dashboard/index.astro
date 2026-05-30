@@ -10,7 +10,7 @@ interface AnalysisRow {
   id: string;
   status: string;
   created_at: string;
-  candidates: { file_name: string | null } | null;
+  candidates: { file_name: string | null; first_name: string | null; last_name: string | null } | null;
   job_profiles: { name: string; seniority_level: string | null } | null;
 }
 
@@ -18,7 +18,9 @@ const analyses: AnalysisRow[] = supabase
   ? (((
       await supabase
         .from("analyses")
-        .select("id, status, created_at, candidates(file_name), job_profiles(name, seniority_level)")
+        .select(
+          "id, status, created_at, candidates(file_name, first_name, last_name), job_profiles(name, seniority_level)",
+        )
         .order("created_at", { ascending: false })
     ).data as AnalysisRow[] | null) ?? [])
   : [];
@@ -91,7 +93,9 @@ const statusColor: Record<string, string> = {
               const profileLabel = profile
                 ? [profile.name, profile.seniority_level].filter(Boolean).join(" — ")
                 : "Unknown profile";
-              const fileName = candidate?.file_name ?? "Pasted CV";
+              const displayName =
+                [candidate?.first_name, candidate?.last_name].filter(Boolean).join(" ") ||
+                (candidate?.file_name ?? "Pasted CV");
               const date = new Date(a.created_at).toLocaleDateString("en-GB", {
                 day: "numeric",
                 month: "short",
@@ -104,7 +108,7 @@ const statusColor: Record<string, string> = {
                 <div class="relative flex items-stretch rounded-xl border border-white/10 bg-white/5 backdrop-blur-md transition-all hover:border-white/20 hover:bg-white/10">
                   <a href={`/dashboard/${a.id}`} class="flex min-w-0 flex-1 items-center justify-between px-5 py-4">
                     <div class="min-w-0 flex-1">
-                      <p class="truncate font-medium text-white">{fileName}</p>
+                      <p class="truncate font-medium text-white">{displayName}</p>
                       <p class="mt-0.5 truncate text-sm text-blue-100/60">{profileLabel}</p>
                     </div>
                     <div class="ml-4 flex shrink-0 flex-col items-end gap-1">

@@ -6,6 +6,7 @@ import { anonymizeCV } from "@/lib/anonymizer/index";
 import { getLLMConfig, createLLMModel, completeLLM } from "@/lib/llm";
 import { AnalysisResponseSchema } from "@/lib/analysis/schema";
 import { QA_ANALYSIS_SYSTEM_PROMPT, buildAnalysisPrompt } from "@/lib/analysis/prompt";
+import { splitFullName, extractCandidateName } from "@/lib/candidate/name";
 
 export const POST: APIRoute = async (context) => {
   if (!context.locals.user) {
@@ -29,6 +30,8 @@ export const POST: APIRoute = async (context) => {
 
   const jobProfileId = formData.get("job_profile_id");
   const candidateIdField = formData.get("candidate_id");
+  const firstNameField = formData.get("first_name");
+  const lastNameField = formData.get("last_name");
   const file = formData.get("file");
   const cvTextField = formData.get("cv_text");
 
@@ -76,11 +79,25 @@ export const POST: APIRoute = async (context) => {
     return jsonResponse({ error: "Provide a file, cv_text, or candidate_id", code: "BAD_REQUEST" }, 400);
   }
 
+  // ── Resolve candidate name (recruiter input wins, else CV header heuristic) ──
+  const recruiterFirst = typeof firstNameField === "string" ? firstNameField.trim() : "";
+  const recruiterLast = typeof lastNameField === "string" ? lastNameField.trim() : "";
+  const { firstName: resolvedFirst, lastName: resolvedLast } =
+    recruiterFirst || recruiterLast
+      ? splitFullName(`${recruiterFirst} ${recruiterLast}`.trim())
+      : extractCandidateName(cvText);
+
   // ── Create DB records ────────────────────────────────────────────────────
   if (!candidateId) {
     const { data: candidate, error: candidateError } = await supabase
       .from("candidates")
-      .insert({ user_id: userId, cv_text: cvText, file_name: fileName })
+      .insert({
+        user_id: userId,
+        cv_text: cvText,
+        file_name: fileName,
+        first_name: resolvedFirst,
+        last_name: resolvedLast,
+      })
       .select("id")
       .single();
 
