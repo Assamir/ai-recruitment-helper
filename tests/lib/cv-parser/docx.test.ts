@@ -7,7 +7,7 @@ function makeDocxBuffer(documentXml: string): ArrayBuffer {
   const zip = zipSync({
     "word/document.xml": strToU8(documentXml),
   });
-  return zip.buffer.slice(zip.byteOffset, zip.byteOffset + zip.byteLength) as ArrayBuffer;
+  return zip.buffer.slice(zip.byteOffset, zip.byteOffset + zip.byteLength);
 }
 
 describe("extractDocxText", () => {
@@ -24,7 +24,7 @@ describe("extractDocxText", () => {
 
   it("throws CVParseError when DOCX does not contain document.xml", async () => {
     const zip = zipSync({ "[Content_Types].xml": strToU8("<Types/>") });
-    const invalidBuffer = zip.buffer.slice(zip.byteOffset, zip.byteOffset + zip.byteLength) as ArrayBuffer;
+    const invalidBuffer = zip.buffer.slice(zip.byteOffset, zip.byteOffset + zip.byteLength);
 
     await expect(extractDocxText(invalidBuffer)).rejects.toBeInstanceOf(CVParseError);
   });

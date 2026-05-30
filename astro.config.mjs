@@ -6,6 +6,7 @@ import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
 import cloudflare from "@astrojs/cloudflare";
 
+// eslint-disable-next-line no-undef
 const isDev = process.argv.includes("dev");
 
 // https://astro.build/config

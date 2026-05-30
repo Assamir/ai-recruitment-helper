@@ -12,13 +12,7 @@ if (!id) {
 const supabase = createClient(Astro.request.headers, Astro.cookies);
 
 const initialStatus = supabase
-  ? (
-      await supabase
-        .from("analyses")
-        .select("status")
-        .eq("id", id)
-        .single()
-    ).data?.status ?? "parsing"
+  ? ((await supabase.from("analyses").select("status").eq("id", id).single()).data?.status ?? "parsing")
   : "parsing";
 ---
 
@@ -26,9 +20,7 @@ const initialStatus = supabase
   <div class="bg-cosmic min-h-screen p-6">
     <div class="mx-auto max-w-3xl">
       <div class="mb-6">
-        <a href="/dashboard" class="text-sm text-blue-100/50 transition-colors hover:text-blue-100/80">
-          ← Dashboard
-        </a>
+        <a href="/dashboard" class="text-sm text-blue-100/50 transition-colors hover:text-blue-100/80"> ← Dashboard </a>
       </div>
       <div class="rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-xl">
         <AnalysisView analysisId={id} initialStatus={initialStatus} client:load />

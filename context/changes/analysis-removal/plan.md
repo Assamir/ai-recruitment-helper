@@ -227,14 +227,14 @@ Adding RLS policies is additive and backward-compatible per `AGENTS.md`. `wrangl
 
 #### Automated
 
-- [ ] 1.1 Migration applies cleanly against local Supabase
-- [ ] 1.2 `npx astro sync && npm run build` passes
-- [ ] 1.3 `npm run lint` passes
+- [x] 1.1 Migration applies cleanly against local Supabase
+- [x] 1.2 `npx astro sync && npm run build` passes
+- [x] 1.3 `npm run lint` passes
 
 #### Manual
 
-- [ ] 1.4 DELETE policies exist on `analyses` and `candidates`
-- [ ] 1.5 Owner delete removes row + cascades questions; non-owner delete affects 0 rows
+- [x] 1.4 DELETE policies exist on `analyses` and `candidates`
+- [x] 1.5 Owner delete removes row + cascades questions; non-owner delete affects 0 rows
 
 ### Phase 2: Delete endpoint + candidate-cleanup helper
 

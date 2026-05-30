@@ -65,6 +65,9 @@ const astroConfig = tseslint.config({
     "astro/no-set-html-directive": "error",
     "astro/no-unused-css-selector": "warn",
     "astro/prefer-class-list-directive": "warn",
+    // astro-eslint-parser does not fully support projectService and causes a
+    // null-assertion crash inside this rule when applied to .astro frontmatter.
+    "@typescript-eslint/no-misused-promises": "off",
   },
 });
 
