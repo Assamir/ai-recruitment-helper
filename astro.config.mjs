@@ -6,12 +6,21 @@ import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
 import cloudflare from "@astrojs/cloudflare";
 
+const isDev = process.argv.includes("dev");
+
 // https://astro.build/config
 export default defineConfig({
   output: "server",
   integrations: [react(), sitemap()],
   vite: {
     plugins: [tailwindcss()],
+    define: isDev ? { "process.env.NODE_ENV": JSON.stringify("development") } : {},
+    esbuild: {
+      jsxDev: false,
+    },
+    resolve: {
+      dedupe: ["react", "react-dom"],
+    },
   },
   adapter: cloudflare({
     prerenderEnvironment: "node",

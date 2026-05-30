@@ -25,7 +25,7 @@ const profiles = supabase
       <h1 class="mb-6 bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-2xl font-bold text-transparent">
         New CV Analysis
       </h1>
-      <AnalysisForm profiles={profiles} client:load />
+      <AnalysisForm profiles={profiles} client:only="react" />
     </div>
   </div>
 </Layout>
