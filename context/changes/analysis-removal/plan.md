@@ -227,30 +227,30 @@ Adding RLS policies is additive and backward-compatible per `AGENTS.md`. `wrangl
 
 #### Automated
 
-- [x] 1.1 Migration applies cleanly against local Supabase
-- [x] 1.2 `npx astro sync && npm run build` passes
-- [x] 1.3 `npm run lint` passes
+- [x] 1.1 Migration applies cleanly against local Supabase — cebf8b2
+- [x] 1.2 `npx astro sync && npm run build` passes — cebf8b2
+- [x] 1.3 `npm run lint` passes — cebf8b2
 
 #### Manual
 
-- [x] 1.4 DELETE policies exist on `analyses` and `candidates`
-- [x] 1.5 Owner delete removes row + cascades questions; non-owner delete affects 0 rows
+- [x] 1.4 DELETE policies exist on `analyses` and `candidates` — cebf8b2
+- [x] 1.5 Owner delete removes row + cascades questions; non-owner delete affects 0 rows — cebf8b2
 
 ### Phase 2: Delete endpoint + candidate-cleanup helper
 
 #### Automated
 
-- [ ] 2.1 Unit tests for `shouldDeleteCandidate` (0→true, 1→false, >1→false)
-- [ ] 2.2 `npm run lint` passes
-- [ ] 2.3 `npx astro sync && npm run build` passes
+- [x] 2.1 Unit tests for `shouldDeleteCandidate` (0→true, 1→false, >1→false)
+- [x] 2.2 `npm run lint` passes
+- [x] 2.3 `npx astro sync && npm run build` passes
 
 #### Manual
 
-- [ ] 2.4 DELETE own analysis → 200, analysis + questions gone
-- [ ] 2.5 Candidate deleted only when no other analysis references it (retry-path check)
-- [ ] 2.6 DELETE another user's analysis → 404, no change
-- [ ] 2.7 401 without session; 503 with DB unconfigured
-- [ ] 2.8 Deleting an in-progress analysis → 200, no surfaced pipeline errors
+- [x] 2.4 DELETE own analysis → 200, analysis + questions gone
+- [x] 2.5 Candidate deleted only when no other analysis references it (retry-path check)
+- [x] 2.6 DELETE another user's analysis → 404, no change
+- [x] 2.7 401 without session; 503 with DB unconfigured
+- [x] 2.8 Deleting an in-progress analysis → 200, no surfaced pipeline errors
 
 ### Phase 3: Dashboard card delete UI
 
