@@ -256,12 +256,12 @@ Adding RLS policies is additive and backward-compatible per `AGENTS.md`. `wrangl
 
 #### Automated
 
-- [x] 3.1 `npx astro sync && npm run build` passes
-- [x] 3.2 `npm run lint` passes
+- [x] 3.1 `npx astro sync && npm run build` passes — 3900e96
+- [x] 3.2 `npm run lint` passes — 3900e96
 
 #### Manual
 
-- [x] 3.3 Delete control present; card body still navigates, button click does not
-- [x] 3.4 Cancel confirm → intact; confirm → card removed after reload
-- [x] 3.5 Deleting the last analysis shows the empty state
-- [x] 3.6 Failed delete surfaces an inline error and keeps the card
+- [x] 3.3 Delete control present; card body still navigates, button click does not — 3900e96
+- [x] 3.4 Cancel confirm → intact; confirm → card removed after reload — 3900e96
+- [x] 3.5 Deleting the last analysis shows the empty state — 3900e96
+- [x] 3.6 Failed delete surfaces an inline error and keeps the card — 3900e96
