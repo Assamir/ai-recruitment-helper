@@ -1,10 +1,10 @@
 ---
 change_id: analysis-removal
 title: Delete a candidate's analysis from the dashboard
-status: implemented
+status: archived
 created: 2026-05-30
 updated: 2026-05-30
-archived_at: null
+archived_at: 2026-05-30T16:22:40Z
 ---
 
 ## Notes

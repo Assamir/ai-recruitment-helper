@@ -36,7 +36,7 @@ Internal IT recruiters need more than CV summaries — they need audits. The pro
 | S-03 | linkedin-cross-reference | paste LinkedIn profile to detect contradictions between CV and LinkedIn | S-01 | FR-004 | proposed |
 | S-04 | report-export | export analysis report as PDF or Markdown | S-01 | FR-009 | proposed |
 | S-05 | candidate-name-on-card | see the candidate's first and last name on the analysis card | F-01, S-01 | US-01, FR-001 | done |
-| S-06 | analysis-removal | delete a candidate's analysis from the dashboard | F-01, S-01 | US-01, FR-002 | planned |
+| S-06 | analysis-removal | delete a candidate's analysis from the dashboard | F-01, S-01 | US-01, FR-002 | done |
 
 ## Streams
 
@@ -162,7 +162,7 @@ What's already in place in the codebase as of 2026-05-26 (auto-researched + user
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Low — a scoped delete on an existing table. The risk is accidental data loss; a confirmation step and RLS-enforced per-user authorization mitigate it.
-- **Status:** planned
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -188,3 +188,4 @@ What's already in place in the codebase as of 2026-05-26 (auto-researched + user
 ## Done
 
 - **S-05: user can see the candidate's first and last name displayed on the analysis card in the dashboard view, so each analysis is identifiable at a glance instead of being shown anonymously.** — Archived 2026-05-30 → `context/archive/2026-05-30-candidate-name-on-card/`. Lesson: —.
+- **S-06: user can delete a candidate's analysis from the dashboard view, removing it from the list and from persistent storage so stale or mistaken analyses can be cleaned up.** — Archived 2026-05-30 → `context/archive/2026-05-30-analysis-removal/`. Lesson: —.
