@@ -3,7 +3,7 @@ project: "AI-Recruiter"
 version: 1
 status: draft
 created: 2026-05-26
-updated: 2026-05-26
+updated: 2026-05-30
 prd_version: 1
 main_goal: market-feedback
 top_blocker: time
@@ -35,6 +35,8 @@ Internal IT recruiters need more than CV summaries — they need audits. The pro
 | S-02 | extended-analysis-inputs | paste custom job requirements and project context to enrich analysis | S-01 | FR-003, FR-005 | proposed |
 | S-03 | linkedin-cross-reference | paste LinkedIn profile to detect contradictions between CV and LinkedIn | S-01 | FR-004 | proposed |
 | S-04 | report-export | export analysis report as PDF or Markdown | S-01 | FR-009 | proposed |
+| S-05 | candidate-name-on-card | see the candidate's first and last name on the analysis card | F-01, S-01 | US-01, FR-001 | planned |
+| S-06 | analysis-removal | delete a candidate's analysis from the dashboard | F-01, S-01 | US-01, FR-002 | planned |
 
 ## Streams
 
@@ -106,7 +108,7 @@ What's already in place in the codebase as of 2026-05-26 (auto-researched + user
 - **Change ID:** extended-analysis-inputs
 - **PRD refs:** FR-003, FR-005
 - **Prerequisites:** S-01 (extends the analysis form and prompt pipeline that S-01 builds)
-- **Parallel with:** S-03, S-04
+- **Parallel with:** S-03, S-04, S-05, S-06
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Low — adds text input fields and enriches the existing LLM prompt. The risk is that poorly written custom requirements produce poor questions (FR-003 Socratic note); prompt engineering can partially compensate.
@@ -118,7 +120,7 @@ What's already in place in the codebase as of 2026-05-26 (auto-researched + user
 - **Change ID:** linkedin-cross-reference
 - **PRD refs:** FR-004
 - **Prerequisites:** S-01 (extends the analysis pipeline and adds a cross-reference dimension)
-- **Parallel with:** S-02, S-04
+- **Parallel with:** S-02, S-04, S-05, S-06
 - **Blockers:** —
 - **Unknowns:**
   - How reliably can unstructured LinkedIn text be parsed and cross-referenced against structured CV claims? — Owner: TBD. Block: no (input is optional; degraded parsing doesn't break the core loop).
@@ -131,12 +133,36 @@ What's already in place in the codebase as of 2026-05-26 (auto-researched + user
 - **Change ID:** report-export
 - **PRD refs:** FR-009
 - **Prerequisites:** S-01 (needs analysis results to export)
-- **Parallel with:** S-02, S-03
+- **Parallel with:** S-02, S-03, S-05, S-06
 - **Blockers:** —
 - **Unknowns:**
   - Can PDF generation libraries run on the workerd runtime? — Owner: TBD. Block: no (Markdown export is a safe fallback).
 - **Risk:** PDF generation on workerd may hit the same runtime compatibility concerns as PDF parsing. Markdown export is reliable regardless. Sequenced after S-01 because export only matters once there are results to export.
 - **Status:** proposed
+
+### S-05: UX Candidate information
+
+- **Outcome:** user can see the candidate's first and last name displayed on the analysis card in the dashboard view, so each analysis is identifiable at a glance instead of being shown anonymously.
+- **Change ID:** candidate-name-on-card
+- **PRD refs:** US-01, FR-001
+- **Prerequisites:** F-01 (candidate name persisted in the schema), S-01 (analysis card and dashboard view exist)
+- **Parallel with:** S-02, S-03, S-04
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** Low — surfaces an already-captured field on an existing card. The only sensitivity is that the name is raw PII; it stays on the recruiter-facing dashboard and must never cross into anonymized/exported content (see S-04 confidentiality boundary).
+- **Status:** planned
+
+### S-06: UX Candidate analysis removal
+
+- **Outcome:** user can delete a candidate's analysis from the dashboard view, removing it from the list and from persistent storage so stale or mistaken analyses can be cleaned up.
+- **Change ID:** analysis-removal
+- **PRD refs:** US-01, FR-002
+- **Prerequisites:** F-01 (analyses table + RLS to authorize deletion), S-01 (analyses exist and are listed on the dashboard)
+- **Parallel with:** S-02, S-03, S-04, S-05
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** Low — a scoped delete on an existing table. The risk is accidental data loss; a confirmation step and RLS-enforced per-user authorization mitigate it.
+- **Status:** planned
 
 ## Backlog Handoff
 
@@ -148,6 +174,8 @@ What's already in place in the codebase as of 2026-05-26 (auto-researched + user
 | S-02 | extended-analysis-inputs | Add custom requirements and project context inputs | no | Depends on S-01 |
 | S-03 | linkedin-cross-reference | Add LinkedIn input and cross-source contradiction detection | no | Depends on S-01 |
 | S-04 | report-export | Add PDF and Markdown report export | no | Depends on S-01 |
+| S-05 | candidate-name-on-card | Show candidate first and last name on the analysis card | no | Depends on F-01, S-01 |
+| S-06 | analysis-removal | Add delete action for a candidate analysis on the dashboard | no | Depends on F-01, S-01 |
 
 ## Open Roadmap Questions
 
