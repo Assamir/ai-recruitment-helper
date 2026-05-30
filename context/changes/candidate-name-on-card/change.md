@@ -1,7 +1,7 @@
 ---
 change_id: candidate-name-on-card
 title: Show candidate first and last name on the analysis card
-status: planned
+status: implementing
 created: 2026-05-30
 updated: 2026-05-30
 archived_at: null

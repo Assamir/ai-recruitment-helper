@@ -212,14 +212,14 @@ Additive nullable columns only — backward-compatible per `AGENTS.md`. `wrangle
 
 #### Automated
 
-- [ ] 1.1 Migration applies cleanly against local Supabase
-- [ ] 1.2 `npx astro sync && npm run build` passes (types compile)
-- [ ] 1.3 `npm run lint` passes
+- [x] 1.1 Migration applies cleanly against local Supabase
+- [x] 1.2 `npx astro sync && npm run build` passes (types compile)
+- [x] 1.3 `npm run lint` passes
 
 #### Manual
 
-- [ ] 1.4 `first_name` / `last_name` exist on `candidates`, nullable, default null
-- [ ] 1.5 Existing `candidates` rows unaffected
+- [x] 1.4 `first_name` / `last_name` exist on `candidates`, nullable, default null
+- [x] 1.5 Existing `candidates` rows unaffected
 
 ### Phase 2: Capture & persist name at ingest
 
