@@ -35,7 +35,7 @@ Internal IT recruiters need more than CV summaries — they need audits. The pro
 | S-02 | extended-analysis-inputs | paste custom job requirements and project context to enrich analysis | S-01 | FR-003, FR-005 | proposed |
 | S-03 | linkedin-cross-reference | paste LinkedIn profile to detect contradictions between CV and LinkedIn | S-01 | FR-004 | proposed |
 | S-04 | report-export | export analysis report as PDF or Markdown | S-01 | FR-009 | proposed |
-| S-05 | candidate-name-on-card | see the candidate's first and last name on the analysis card | F-01, S-01 | US-01, FR-001 | planned |
+| S-05 | candidate-name-on-card | see the candidate's first and last name on the analysis card | F-01, S-01 | US-01, FR-001 | done |
 | S-06 | analysis-removal | delete a candidate's analysis from the dashboard | F-01, S-01 | US-01, FR-002 | planned |
 
 ## Streams
@@ -150,7 +150,7 @@ What's already in place in the codebase as of 2026-05-26 (auto-researched + user
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Low — surfaces an already-captured field on an existing card. The only sensitivity is that the name is raw PII; it stays on the recruiter-facing dashboard and must never cross into anonymized/exported content (see S-04 confidentiality boundary).
-- **Status:** planned
+- **Status:** done
 
 ### S-06: UX Candidate analysis removal
 
@@ -187,4 +187,4 @@ What's already in place in the codebase as of 2026-05-26 (auto-researched + user
 
 ## Done
 
-(Empty on first generation. Entries appended by `/10x-archive` when a change is archived.)
+- **S-05: user can see the candidate's first and last name displayed on the analysis card in the dashboard view, so each analysis is identifiable at a glance instead of being shown anonymously.** — Archived 2026-05-30 → `context/archive/2026-05-30-candidate-name-on-card/`. Lesson: —.
