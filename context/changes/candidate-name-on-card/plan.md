@@ -241,11 +241,11 @@ Additive nullable columns only — backward-compatible per `AGENTS.md`. `wrangle
 
 #### Automated
 
-- [x] 3.1 `npx astro sync && npm run build` passes
-- [x] 3.2 `npm run lint` passes
+- [x] 3.1 `npx astro sync && npm run build` passes — 73fc756
+- [x] 3.2 `npm run lint` passes — 73fc756
 
 #### Manual
 
-- [x] 3.3 Card shows `"First Last"` when a name is stored
-- [x] 3.4 Card falls back to filename / `"Pasted CV"` when no name
-- [x] 3.5 No `pii_map` / extra raw PII exposed on the page
+- [x] 3.3 Card shows `"First Last"` when a name is stored — 73fc756
+- [x] 3.4 Card falls back to filename / `"Pasted CV"` when no name — 73fc756
+- [x] 3.5 No `pii_map` / extra raw PII exposed on the page — 73fc756
