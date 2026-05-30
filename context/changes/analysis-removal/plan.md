@@ -227,41 +227,41 @@ Adding RLS policies is additive and backward-compatible per `AGENTS.md`. `wrangl
 
 #### Automated
 
-- [ ] 1.1 Migration applies cleanly against local Supabase
-- [ ] 1.2 `npx astro sync && npm run build` passes
-- [ ] 1.3 `npm run lint` passes
+- [x] 1.1 Migration applies cleanly against local Supabase — cebf8b2
+- [x] 1.2 `npx astro sync && npm run build` passes — cebf8b2
+- [x] 1.3 `npm run lint` passes — cebf8b2
 
 #### Manual
 
-- [ ] 1.4 DELETE policies exist on `analyses` and `candidates`
-- [ ] 1.5 Owner delete removes row + cascades questions; non-owner delete affects 0 rows
+- [x] 1.4 DELETE policies exist on `analyses` and `candidates` — cebf8b2
+- [x] 1.5 Owner delete removes row + cascades questions; non-owner delete affects 0 rows — cebf8b2
 
 ### Phase 2: Delete endpoint + candidate-cleanup helper
 
 #### Automated
 
-- [ ] 2.1 Unit tests for `shouldDeleteCandidate` (0→true, 1→false, >1→false)
-- [ ] 2.2 `npm run lint` passes
-- [ ] 2.3 `npx astro sync && npm run build` passes
+- [x] 2.1 Unit tests for `shouldDeleteCandidate` (0→true, 1→false, >1→false) — d4a13e2
+- [x] 2.2 `npm run lint` passes — d4a13e2
+- [x] 2.3 `npx astro sync && npm run build` passes — d4a13e2
 
 #### Manual
 
-- [ ] 2.4 DELETE own analysis → 200, analysis + questions gone
-- [ ] 2.5 Candidate deleted only when no other analysis references it (retry-path check)
-- [ ] 2.6 DELETE another user's analysis → 404, no change
-- [ ] 2.7 401 without session; 503 with DB unconfigured
-- [ ] 2.8 Deleting an in-progress analysis → 200, no surfaced pipeline errors
+- [x] 2.4 DELETE own analysis → 200, analysis + questions gone — d4a13e2
+- [x] 2.5 Candidate deleted only when no other analysis references it (retry-path check) — d4a13e2
+- [x] 2.6 DELETE another user's analysis → 404, no change — d4a13e2
+- [x] 2.7 401 without session; 503 with DB unconfigured — d4a13e2
+- [x] 2.8 Deleting an in-progress analysis → 200, no surfaced pipeline errors — d4a13e2
 
 ### Phase 3: Dashboard card delete UI
 
 #### Automated
 
-- [ ] 3.1 `npx astro sync && npm run build` passes
-- [ ] 3.2 `npm run lint` passes
+- [x] 3.1 `npx astro sync && npm run build` passes — 3900e96
+- [x] 3.2 `npm run lint` passes — 3900e96
 
 #### Manual
 
-- [ ] 3.3 Delete control present; card body still navigates, button click does not
-- [ ] 3.4 Cancel confirm → intact; confirm → card removed after reload
-- [ ] 3.5 Deleting the last analysis shows the empty state
-- [ ] 3.6 Failed delete surfaces an inline error and keeps the card
+- [x] 3.3 Delete control present; card body still navigates, button click does not — 3900e96
+- [x] 3.4 Cancel confirm → intact; confirm → card removed after reload — 3900e96
+- [x] 3.5 Deleting the last analysis shows the empty state — 3900e96
+- [x] 3.6 Failed delete surfaces an inline error and keeps the card — 3900e96

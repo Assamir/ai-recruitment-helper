@@ -28,10 +28,11 @@ function extractTextFromDocumentXml(xml: string): string {
   return textFragments.join("");
 }
 
+// eslint-disable-next-line @typescript-eslint/require-await
 export async function extractDocxText(buffer: ArrayBuffer): Promise<string> {
   try {
     const files = unzipSync(new Uint8Array(buffer));
-    const documentXml = files["word/document.xml"];
+    const documentXml = files["word/document.xml"] as Uint8Array | undefined;
 
     if (!documentXml) {
       throw new CVParseError("PARSE_FAILED", "DOCX file is missing word/document.xml.");
