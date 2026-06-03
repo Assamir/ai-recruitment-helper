@@ -1,6 +1,6 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "ai-recruiter",
+	"name": "ai-recruitment-helper",
 	"main": "@astrojs/cloudflare/entrypoints/server",
 	"compatibility_date": "2026-05-08",
 	// Free tier: 10ms CPU per invocation (sufficient for auth + page renders).
