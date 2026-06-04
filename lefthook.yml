@@ -1,42 +1,28 @@
-# EXAMPLE USAGE:
-#
-#   Refer for explanation to following link:
-#   https://lefthook.dev/configuration/
-#
-# pre-push:
-#   jobs:
-#     - name: packages audit
-#       tags:
-#         - frontend
-#         - security
-#       run: yarn audit
-#
-#     - name: gems audit
-#       tags:
-#         - backend
-#         - security
-#       run: bundle audit
-#
-# pre-commit:
-#   parallel: true
-#   jobs:
-#     - run: yarn eslint {staged_files}
-#       glob: "*.{js,ts,jsx,tsx}"
-#
-#     - name: rubocop
-#       glob: "*.rb"
-#       exclude:
-#         - config/application.rb
-#         - config/routes.rb
-#       run: bundle exec rubocop --force-exclusion -- {all_files}
-#
-#     - name: govet
-#       files: git ls-files -m
-#       glob: "*.go"
-#       run: go vet -- {files}
-#
-#     - script: "hello.js"
-#       runner: node
-#
-#     - script: "hello.go"
-#       runner: go run
+# Pre-commit quality gates (test-plan §5: lint + typecheck + scoped tests).
+# Install: npm install (prepare → lefthook install) or npx lefthook install
+
+pre-commit:
+  parallel: true
+  jobs:
+    - name: eslint (staged)
+      run: npx eslint --max-warnings 0 --fix {staged_files}
+      glob: "*.{ts,tsx,astro}"
+
+    - name: astro check
+      run: npm run typecheck
+      glob:
+        - "src/**/*.{ts,tsx,astro}"
+        - "tests/**/*.{ts,tsx}"
+
+    - name: vitest related (risk areas)
+      run: node scripts/lefthook-related-tests.mjs
+      glob:
+        - "src/lib/llm/**"
+        - "src/lib/analysis/**"
+        - "src/components/analysis/**"
+        - "src/lib/anonymizer/**"
+        - "src/lib/cv-parser/**"
+        - "src/pages/api/**"
+        - "tests/lib/**"
+        - "tests/rls/**"
+        - "tests/components/**"

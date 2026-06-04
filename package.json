@@ -9,6 +9,7 @@
     "astro": "astro",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "typecheck": "astro sync && astro check",
     "format": "prettier --write .",
     "db:types": "npx supabase gen types typescript --linked --schema public > src/db/database.types.ts",
     "test": "vitest run",
