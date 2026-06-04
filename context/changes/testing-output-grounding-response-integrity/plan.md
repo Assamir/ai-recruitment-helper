@@ -501,23 +501,23 @@ the change is ready to merge and archive.
 
 #### Automated
 
-- [x] 1.1 Existing 11 `tests/lib/**` tests pass on node via `npm run test`
-- [x] 1.2 A smoke render test under `tests/components/**` passes on jsdom
-- [x] 1.3 Lint passes: `npm run lint`
-- [x] 1.4 Build passes: `npx astro sync && npm run build`
+- [x] 1.1 Existing 11 `tests/lib/**` tests pass on node via `npm run test` — bb47566
+- [x] 1.2 A smoke render test under `tests/components/**` passes on jsdom — bb47566
+- [x] 1.3 Lint passes: `npm run lint` — bb47566
+- [x] 1.4 Build passes: `npx astro sync && npm run build` — bb47566
 
 #### Manual
 
-- [x] 1.5 `npm run test:watch` shows both projects and filters work
-- [x] 1.6 node-env tests still have no `document` (spot-check)
+- [x] 1.5 `npm run test:watch` shows both projects and filters work — bb47566
+- [x] 1.6 node-env tests still have no `document` (spot-check) — bb47566
 
 ### Phase 2: Risk #2 — Render Integrity (fix + component test)
 
 #### Automated
 
-- [ ] 2.1 `npm run test` passes including the new component test
-- [ ] 2.2 N-questions assertion fails against pre-fix `CATEGORY_LABELS` (verified once, then restored)
-- [ ] 2.3 Lint passes: `npm run lint`
+- [x] 2.1 `npm run test` passes including the new component test
+- [x] 2.2 N-questions assertion fails against pre-fix `CATEGORY_LABELS` (verified once, then restored)
+- [x] 2.3 Lint passes: `npm run lint`
 
 #### Manual
 
@@ -528,10 +528,10 @@ the change is ready to merge and archive.
 
 #### Automated
 
-- [ ] 3.1 `npm run test` passes including `faithfulness.test.ts`
-- [ ] 3.2 Ungrounded fixture is flagged (≥1 finding)
-- [ ] 3.3 Grounded + legitimate-missing fixtures produce zero findings
-- [ ] 3.4 Lint passes: `npm run lint`
+- [x] 3.1 `npm run test` passes including `faithfulness.test.ts`
+- [x] 3.2 Ungrounded fixture is flagged (≥1 finding)
+- [x] 3.3 Grounded + legitimate-missing fixtures produce zero findings
+- [x] 3.4 Lint passes: `npm run lint`
 
 #### Manual
 
@@ -542,9 +542,9 @@ the change is ready to merge and archive.
 
 #### Automated
 
-- [ ] 4.1 CI `lint-build` job runs `npm run test`
-- [ ] 4.2 A deliberately broken test fails the CI job (verified once, then reverted)
-- [ ] 4.3 `npm run lint` and `npm run build` still pass in CI
+- [x] 4.1 CI `lint-build` job runs `npm run test`
+- [x] 4.2 A deliberately broken test fails the CI job (verified once, then reverted)
+- [x] 4.3 `npm run lint` and `npm run build` still pass in CI
 
 #### Manual
 

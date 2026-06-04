@@ -1,9 +1,11 @@
+import type { AnalysisCategory } from "@/lib/analysis/schema";
+
 interface Question {
   id: string;
   category: string;
   question: string;
   rationale: string;
-  suggested_answer: string;
+  suggested_answer: string | null;
 }
 
 interface Profile {
@@ -21,20 +23,20 @@ interface AnalysisResultsProps {
   createdAt: string;
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  qa_fundamentals: "QA Fundamentals",
-  test_automation: "Test Automation",
-  processes: "Processes",
-  technical: "Technical",
-  soft_skills: "Soft Skills",
+const CATEGORY_ORDER: AnalysisCategory[] = ["missing_elements", "contradictions", "vague_claims", "anomalies"];
+
+const CATEGORY_LABELS: Record<AnalysisCategory, string> = {
+  missing_elements: "Missing Elements",
+  contradictions: "Contradictions",
+  vague_claims: "Vague Claims",
+  anomalies: "Anomalies",
 };
 
-const CATEGORY_ICONS: Record<string, string> = {
-  qa_fundamentals: "🧪",
-  test_automation: "🤖",
-  processes: "🔄",
-  technical: "⚙️",
-  soft_skills: "💬",
+const CATEGORY_ICONS: Record<AnalysisCategory, string> = {
+  missing_elements: "📋",
+  contradictions: "⚡",
+  vague_claims: "🔍",
+  anomalies: "⚠️",
 };
 
 export function AnalysisResults({ questions, matchSummary, profile, fileName, createdAt }: AnalysisResultsProps) {
@@ -73,10 +75,11 @@ export function AnalysisResults({ questions, matchSummary, profile, fileName, cr
       )}
 
       {/* Questions grouped by category */}
-      {Object.entries(CATEGORY_LABELS).map(([key, label]) => {
+      {CATEGORY_ORDER.map((key) => {
+        const label = CATEGORY_LABELS[key];
         const qs = grouped[key];
         if (!qs?.length) return null;
-        const icon = CATEGORY_ICONS[key] ?? "📋";
+        const icon = CATEGORY_ICONS[key];
         return (
           <section key={key}>
             <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold tracking-wide text-blue-100/70 uppercase">
