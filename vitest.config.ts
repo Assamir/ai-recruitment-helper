@@ -10,5 +10,24 @@ export default defineConfig({
   test: {
     globals: true,
     passWithNoTests: true,
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: "node",
+          environment: "node",
+          include: ["tests/lib/**/*.test.ts"],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: "components",
+          environment: "jsdom",
+          include: ["tests/components/**/*.test.{ts,tsx}"],
+          setupFiles: ["tests/setup/dom.ts"],
+        },
+      },
+    ],
   },
 });
