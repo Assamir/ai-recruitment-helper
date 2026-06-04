@@ -1,18 +1,18 @@
-# Input Integrity — Parsing + Anonymization (Test Rollout Phase 2) — Implementation Plan
+﻿# Input Integrity â€” Parsing + Anonymization (Test Rollout Phase 2) â€” Implementation Plan
 
 ## Overview
 
-Phase 2 of the test rollout (`context/foundation/test-plan.md` §3) protects the two
-input-side risks on the **upload → parse → store raw → anonymize →
-`buildAnalysisPrompt` → `completeLLM` → render** pipeline:
+Phase 2 of the test rollout (`context/foundation/test-plan.md` Â§3) protects the two
+input-side risks on the **upload â†’ parse â†’ store raw â†’ anonymize â†’
+`buildAnalysisPrompt` â†’ `completeLLM` â†’ render** pipeline:
 
-- **Risk #5 — garbage CV text analyzed as if real.** The only "no usable text" gate
-  today is `text.trim().length === 0 → EMPTY_CONTENT` in
+- **Risk #5 â€” garbage CV text analyzed as if real.** The only "no usable text" gate
+  today is `text.trim().length === 0 â†’ EMPTY_CONTENT` in
   `src/lib/cv-parser/index.ts:27-32`. Empty/scanned-to-`""`, corrupt, and wrong-MIME
   files fail loud. **Non-empty garbage** (PDF noise, mangled tables, pasted junk, bad
   stored text on retry) passes silently into `completeLLM`. The change goal is explicit:
   garbage must be **rejected, not analyzed**.
-- **Risk #3 — raw PII crosses the org boundary.** On the analysis route, anonymization
+- **Risk #3 â€” raw PII crosses the org boundary.** On the analysis route, anonymization
   is mandatory: the prompt embeds only `anonymizedText` (`api/analysis/index.ts:149-171`,
   `prompt.ts:49-50`), so raw PII reaches the provider **only on an anonymizer miss**. The
   anonymizer is regex + section heuristics with documented, *accepted* MVP gaps. Nothing
@@ -22,8 +22,8 @@ input-side risks on the **upload → parse → store raw → anonymize →
 This change (a) adds a **fail-fast quality gate** that rejects non-empty garbage at the
 single resolved-`cvText` chokepoint (covering file, paste, and retry inputs) and tests it;
 (b) characterizes real parser dispatch/error behavior with mocked-extractor text fixtures;
-(c) adds the **decisive Risk #3 boundary assert** — no catchable raw PII survives
-`anonymizeCV → buildAnalysisPrompt` — plus unit characterization of the anonymizer's
+(c) adds the **decisive Risk #3 boundary assert** â€” no catchable raw PII survives
+`anonymizeCV â†’ buildAnalysisPrompt` â€” plus unit characterization of the anonymizer's
 section heuristics and its accepted MVP gaps; and (d) records the patterns in the test-plan
 cookbook and flips Phase 2 status. CI already runs `npm run test` (wired in test-rollout
 Phase 1), so the new tests gate automatically.
@@ -31,28 +31,28 @@ Phase 1), so the new tests gate automatically.
 ## Current State Analysis
 
 - **Single mandatory anonymize seam.** The analysis route has exactly one
-  `anonymizeCV → buildAnalysisPrompt → completeLLM` path with no skip branch
+  `anonymizeCV â†’ buildAnalysisPrompt â†’ completeLLM` path with no skip branch
   (`api/analysis/index.ts:149-171`). The prompt embeds only `anonymizedText` at its tail
-  (`prompt.ts:49-50`). This makes a boundary assert cheap and decisive at the lib seam —
+  (`prompt.ts:49-50`). This makes a boundary assert cheap and decisive at the lib seam â€”
   no route harness needed.
 - **`cvText` is resolved through three branches that then converge.** Retry-from-DB
-  (`index.ts:47-64`, falsy-check only), file upload (`:65-74`, `extractText` →
-  `EMPTY_CONTENT`/`PARSE_FAILED`/`UNSUPPORTED_FORMAT` → 400), and paste (`:75-77`,
+  (`index.ts:47-64`, falsy-check only), file upload (`:65-74`, `extractText` â†’
+  `EMPTY_CONTENT`/`PARSE_FAILED`/`UNSUPPORTED_FORMAT` â†’ 400), and paste (`:75-77`,
   trim-non-empty only). All three assign `cvText` and fall through to a common point at
   `:80` before name resolution and DB insert. **That convergence point at `:80` is the
   single chokepoint** where a quality gate covers every input path.
 - **Parser error contract.** `CVParseError` carries codes
   `UNSUPPORTED_FORMAT | PARSE_FAILED | EMPTY_CONTENT` (`cv-parser/errors.ts:1-11`); the
-  route maps any `CVParseError` from the file branch → HTTP 400 (`index.ts:69-73`).
-- **Anonymizer behavior** (`anonymizer/index.ts:41-132`): empty/whitespace → passthrough;
+  route maps any `CVParseError` from the file branch â†’ HTTP 400 (`index.ts:69-73`).
+- **Anonymizer behavior** (`anonymizer/index.ts:41-132`): empty/whitespace â†’ passthrough;
   email/phone/url regexes (`patterns.ts:20-51`); header-only Title-Case name
   (`section-rules.ts:10-40`); pipe-table-only companies, then all literal occurrences
   replaced (`section-rules.ts:48-73`, `index.ts:58-71`). **Addresses hard-coded to 0**
   (`index.ts:129`); `findDates` defined but **never called** (`patterns.ts:53-55`). These
-  are documented, accepted MVP trade-offs — not bugs to silently rewrite.
+  are documented, accepted MVP trade-offs â€” not bugs to silently rewrite.
 - **Test infrastructure exists.** Vitest two-project config from Phase 1: `node`
   (`tests/lib/**`) + `components` (`tests/components/**`, jsdom); `globals: true`,
-  `@`→`src` (`vitest.config.ts`). `vi.mock("ai")` at the network edge is house style
+  `@`â†’`src` (`vitest.config.ts`). `vi.mock("ai")` at the network edge is house style
   (`tests/lib/llm/client.test.ts`). CI runs `npm run test` (test-rollout Phase 1 wired it).
 - **Current coverage gaps** (research):
   - cv-parser: `index.test.ts` mocks the extractors (MIME dispatch, `EMPTY_CONTENT`,
@@ -60,7 +60,7 @@ Phase 1), so the new tests gate automatically.
     test for non-empty garbage**; **no quality gate exists** to test.
   - anonymizer: `patterns.test.ts` + `index.test.ts` on inline strings. **No
     `section-rules.test.ts`**. `prompt.test.ts:75-79` checks a pre-anonymized constant,
-    **not** the `anonymizeCV → buildAnalysisPrompt` chain. **No boundary PII-free assert.**
+    **not** the `anonymizeCV â†’ buildAnalysisPrompt` chain. **No boundary PII-free assert.**
 
 ## Desired End State
 
@@ -79,22 +79,22 @@ After this change:
    company).
 4. The anonymizer's section heuristics and its accepted MVP gaps (body-only company,
    single-token/ALL-CAPS/hyphenated name, phone without `+`/US shape, addresses, dates)
-   are characterized with falsifiable fixtures — documenting current behavior, not
+   are characterized with falsifiable fixtures â€” documenting current behavior, not
    rewriting the anonymizer.
-5. `test-plan.md` §6 cookbook, §3 Phase 2 status, §4 corpus row, and §8 freshness are
+5. `test-plan.md` Â§6 cookbook, Â§3 Phase 2 status, Â§4 corpus row, and Â§8 freshness are
    updated; the new tests gate in CI.
 
 ### Key Discoveries
 
-- The three input branches converge at `index.ts:80` — one gate call there covers
+- The three input branches converge at `index.ts:80` â€” one gate call there covers
   file + paste + retry (the user's "single chokepoint" decision).
-- The org boundary is a pure lib seam (`anonymizeCV → buildAnalysisPrompt`), so the
-  decisive Risk #3 assert needs no Supabase/route/LLM — just the two function calls and a
+- The org boundary is a pure lib seam (`anonymizeCV â†’ buildAnalysisPrompt`), so the
+  decisive Risk #3 assert needs no Supabase/route/LLM â€” just the two function calls and a
   string check.
-- PII echo ⊆ anonymizer misses: the LLM only ever sees `anonymizedText`, so it can only
+- PII echo âŠ† anonymizer misses: the LLM only ever sees `anonymizedText`, so it can only
   echo PII already present in `anonymizedText`. The boundary PII-free assert fully covers
-  the echo surface — no separate render-layer echo test is needed (planning decision).
-- `CVParseError` + the route's existing `→ 400` mapping is the established pattern to reuse
+  the echo surface â€” no separate render-layer echo test is needed (planning decision).
+- `CVParseError` + the route's existing `â†’ 400` mapping is the established pattern to reuse
   for the new gate (`errors.ts:1-11`, `index.ts:69-73`).
 
 ## What We're NOT Doing
@@ -109,11 +109,11 @@ After this change:
   (`docx.test.ts`) is left as-is.
 - **No `/api/llm/health` work.** That endpoint sends synthetic (no real PII), auth-gated
   text to the provider; it is out of scope for this phase and left untouched.
-- **No separate PII-echo / rendered-output test.** Covered by the boundary assert (echo ⊆
+- **No separate PII-echo / rendered-output test.** Covered by the boundary assert (echo âŠ†
   anonymizer misses).
 - **No full analysis-route integration test.** The route is a heavy Astro `APIRoute`
   (`context.locals`, Supabase); end-to-end orchestration and the route-level
-  "garbage → 400" / boundary assertion are deferred to test-rollout Phase 4. Risk #5/#3
+  "garbage â†’ 400" / boundary assertion are deferred to test-rollout Phase 4. Risk #5/#3
   automated signal here is the deterministic lib-level unit/integration tests; the
   route-wired gate is verified by build + manual.
 - **No export/report test.** No file export exists yet (roadmap S-04 `proposed`); FR-009
@@ -125,20 +125,20 @@ After this change:
 
 Three phases, each independently verifiable:
 
-1. **Risk #5** — add a conservative, deterministic quality heuristic + a new
+1. **Risk #5** â€” add a conservative, deterministic quality heuristic + a new
    `CVParseError` code, wire it once at the resolved-`cvText` chokepoint, and prove it
    (clean passes, garbage rejected, terse-real passes) plus characterize the parser's
    dispatch/error contract with mocked-extractor text fixtures.
-2. **Risk #3** — characterize the anonymizer's section heuristics in isolation, then add
+2. **Risk #3** â€” characterize the anonymizer's section heuristics in isolation, then add
    the decisive boundary PII-free assert over a synthetic messy-CV corpus split into
    "catchable" (must be removed) and "accepted-miss" (documented pass-through) classes.
-3. **Docs + gate verification** — fill the test-plan cookbook, flip Phase 2 status,
+3. **Docs + gate verification** â€” fill the test-plan cookbook, flip Phase 2 status,
    confirm the new tests gate in CI.
 
 The Risk #5 gate is **conservative by design**: it must reject obvious non-text noise
 without rejecting short-but-real CVs. The threshold is tuned against fixtures, with at
 least one borderline "terse real CV" fixture that MUST pass and one "non-empty garbage"
-fixture that MUST be rejected — making the threshold falsifiable rather than arbitrary.
+fixture that MUST be rejected â€” making the threshold falsifiable rather than arbitrary.
 
 ## Critical Implementation Details
 
@@ -159,7 +159,7 @@ fixture that MUST be rejected — making the threshold falsifiable rather than a
 
 ---
 
-## Phase 1: Risk #5 — Fail-Fast Quality Gate + Parser Characterization
+## Phase 1: Risk #5 â€” Fail-Fast Quality Gate + Parser Characterization
 
 ### Overview
 
@@ -179,7 +179,7 @@ parse failures.
 
 **Contract**: Extend `CVParseErrorCode` with a new member (e.g. `INSUFFICIENT_CONTENT`),
 distinct from `EMPTY_CONTENT` (which stays for truly-empty extraction). No change to the
-`CVParseError` class shape. The route's existing `CVParseError → 400` mapping already
+`CVParseError` class shape. The route's existing `CVParseError â†’ 400` mapping already
 handles any code.
 
 #### 2. Quality heuristic helper
@@ -191,9 +191,9 @@ worth analyzing, rejecting obvious non-empty garbage while never rejecting a sho
 CV.
 
 **Contract**: Export a function (e.g. `assertUsableCvText(text: string): void` that throws
-`CVParseError("INSUFFICIENT_CONTENT", …)` when the text fails the heuristic, or a
+`CVParseError("INSUFFICIENT_CONTENT", â€¦)` when the text fails the heuristic, or a
 predicate `assessCvTextQuality(text): { usable: boolean; reason?: string }` the route turns
-into a throw — pick one and keep it pure/synchronous). The heuristic combines a few cheap,
+into a throw â€” pick one and keep it pure/synchronous). The heuristic combines a few cheap,
 deterministic signals tuned conservatively (e.g. minimum count of word-like tokens, minimum
 ratio of alphanumeric/letter characters to total, minimum distinct-word count) so dense
 encoding noise and metadata fragments fail while a terse real CV passes. Document the chosen
@@ -224,7 +224,7 @@ handling unchanged.
 **Contract**: Using extractor-output text fixtures (inline strings or
 `tests/fixtures/cv/`), assert: a clean CV string passes; a **non-empty garbage** string
 (encoding noise / metadata fragments / repeated punctuation) is rejected with
-`INSUFFICIENT_CONTENT`; a **terse-but-real** CV (few lines, real words) passes — the
+`INSUFFICIENT_CONTENT`; a **terse-but-real** CV (few lines, real words) passes â€” the
 falsifiability anchor proving the threshold isn't over-aggressive. Cover the boundary around
 the threshold with at least one just-above and one just-below case.
 
@@ -239,7 +239,7 @@ including the previously-untested non-empty-garbage handoff.
 the right extractor; `UNSUPPORTED_FORMAT` for an unknown type; `EMPTY_CONTENT` for `""`/
 whitespace extractor output; `PARSE_FAILED` for an extractor throw; inner `CVParseError`
 re-thrown unchanged; and that **non-empty garbage extractor output is returned by
-`extractText` unchanged** (documenting that `extractText` itself does not gate quality — the
+`extractText` unchanged** (documenting that `extractText` itself does not gate quality â€” the
 chokepoint helper does). Keep the existing real-`fflate` `docx.test.ts` untouched.
 
 ### Success Criteria
@@ -255,7 +255,7 @@ chokepoint helper does). Keep the existing real-`fflate` `docx.test.ts` untouche
 #### Manual Verification
 
 - Locally upload/paste an obviously-garbage "CV" (random bytes saved as `.pdf`, or a
-  metadata-only paste) → the request returns 400 with the new code, no analysis row reaches
+  metadata-only paste) â†’ the request returns 400 with the new code, no analysis row reaches
   `analyzing`.
 - A short but real CV still analyzes end-to-end (no false rejection).
 - A retry against a candidate whose stored `cv_text` is garbage is now also rejected.
@@ -265,13 +265,13 @@ before proceeding to Phase 2.
 
 ---
 
-## Phase 2: Risk #3 — Anonymizer Characterization + Boundary PII-Free Assert
+## Phase 2: Risk #3 â€” Anonymizer Characterization + Boundary PII-Free Assert
 
 ### Overview
 
 Characterize the anonymizer's section heuristics in isolation, then add the decisive
 boundary test: across a synthetic messy-CV corpus, no catchable raw PII survives
-`anonymizeCV → buildAnalysisPrompt`. Accepted MVP gaps are characterized as documented
+`anonymizeCV â†’ buildAnalysisPrompt`. Accepted MVP gaps are characterized as documented
 pass-throughs, not asserted clean.
 
 ### Changes Required
@@ -283,7 +283,7 @@ pass-throughs, not asserted clean.
 **Intent**: Cover the name/company heuristics research flagged as untested, pinning both
 what they catch and the accepted classes they miss.
 
-**Contract**: For `findCandidateName`: a header Title-Case 2–4-word name is matched;
+**Contract**: For `findCandidateName`: a header Title-Case 2â€“4-word name is matched;
 ALL-CAPS header lines are skipped; only the first qualifying line wins; **misses**
 single-token names, 5+-word lines, lines with digits/special chars, and names below the
 header (assert current `[]`/no-match behavior, tagged as accepted gaps). For
@@ -299,10 +299,10 @@ prose (assert current no-match, tagged accepted).
 boundary, split by catchability.
 
 **Contract**: Two fixture groups, all synthetic:
-- **Catchable PII** — CV strings containing email, an intl `+` phone, a US `(555)` phone, a
+- **Catchable PII** â€” CV strings containing email, an intl `+` phone, a US `(555)` phone, a
   header Title-Case name, and a pipe-table company. The boundary test asserts none of these
   raw values appear in the prompt.
-- **Accepted-miss PII** — CV strings containing a body-only company, a single-token/
+- **Accepted-miss PII** â€” CV strings containing a body-only company, a single-token/
   ALL-CAPS/hyphenated name, a phone without `+`/US shape, a bare domain, a street address,
   and a `dd/mm/yyyy` date. The characterization tests assert current pass-through behavior,
   tagged as documented gaps (addresses never detected, `findDates` never called).
@@ -312,14 +312,14 @@ boundary, split by catchability.
 
 **File**: `tests/lib/anonymizer/boundary.test.ts` (new)
 
-**Intent**: The decisive Risk #3 guard — prove that the string actually handed toward the
+**Intent**: The decisive Risk #3 guard â€” prove that the string actually handed toward the
 LLM is free of catchable raw PII.
 
 **Contract**: For each **catchable-PII** fixture, compute
 `buildAnalysisPrompt(anonymizeCV(cv).anonymizedText, profile)` (synthetic `profile`) and
 assert the prompt contains the expected placeholders (`[EMAIL]`, `[PHONE]`,
 `[CANDIDATE_NAME]`, `[COMPANY_N]`) and **none** of the fixture's raw PII values. This is a
-pure lib seam — no Supabase, no route, no real LLM. Optionally add one variant that routes
+pure lib seam â€” no Supabase, no route, no real LLM. Optionally add one variant that routes
 the same prompt through `completeLLM` with `vi.mock("ai")` (house pattern) and asserts the
 captured `generateText` prompt argument is equally PII-free, for call-site fidelity.
 
@@ -328,7 +328,7 @@ captured `generateText` prompt argument is equally PII-free, for call-site fidel
 **File**: `tests/lib/anonymizer/index.test.ts` (extend existing)
 
 **Intent**: Document, with falsifiable fixtures, which PII classes currently survive
-anonymization — so the gap is visible and a future improvement is measurable, without
+anonymization â€” so the gap is visible and a future improvement is measurable, without
 pretending it's fixed.
 
 **Contract**: For each accepted-miss fixture, assert the corresponding raw value **still
@@ -377,12 +377,12 @@ tests gate in CI (already wired in test-rollout Phase 1).
 future contributor, and reflect that Phase 2 shipped.
 
 **Contract**: Add cookbook entries for (a) the CV fixture corpus + quality-gate unit
-pattern and (b) the boundary PII-free assert at the `anonymizeCV → buildAnalysisPrompt`
-seam (mock the `ai` edge only if asserting the call-site variant). Flip §3 Phase 2 Status to
-its done value with the change-folder path. Update the §4 "CV fixture corpus" row (binary
+pattern and (b) the boundary PII-free assert at the `anonymizeCV â†’ buildAnalysisPrompt`
+seam (mock the `ai` edge only if asserting the call-site variant). Flip Â§3 Phase 2 Status to
+its done value with the change-folder path. Update the Â§4 "CV fixture corpus" row (binary
 corpus deliberately deferred; extractor edge mocked; `tests/fixtures/cv/` text corpus
-exists). Note in §6.6 the Risk #5 production gate decision (garbage now rejected at the
-chokepoint) and the Risk #3 echo ⊆ misses reasoning. Update §8 freshness date.
+exists). Note in Â§6.6 the Risk #5 production gate decision (garbage now rejected at the
+chokepoint) and the Risk #3 echo âŠ† misses reasoning. Update Â§8 freshness date.
 
 #### 2. CI gate verification (no code change)
 
@@ -390,7 +390,7 @@ chokepoint) and the Risk #3 echo ⊆ misses reasoning. Update §8 freshness date
 
 **Intent**: Confirm the existing `npm run test` step picks up and gates on the new tests.
 
-**Contract**: No edit expected — confirm the `lint-build` job already runs `npm run test`
+**Contract**: No edit expected â€” confirm the `lint-build` job already runs `npm run test`
 (wired in test-rollout Phase 1) and that the new node-project tests run there. Only edit if
 the step is somehow missing.
 
@@ -400,7 +400,7 @@ the step is somehow missing.
 
 - Full `npm run test` (all node + components projects) passes on a clean checkout.
 - CI run on the PR shows the test step executing the new tests and gating (a deliberately
-  broken assertion fails the job — verify once on a scratch commit, then revert).
+  broken assertion fails the job â€” verify once on a scratch commit, then revert).
 - `npm run lint` and `npm run build` still pass.
 
 #### Manual Verification
@@ -408,7 +408,7 @@ the step is somehow missing.
 - `test-plan.md` reads accurately for a contributor who wasn't part of this change
   (cookbook entries are followable; Phase 2 status reflects reality).
 
-**Implementation Note**: Final phase — after automated + manual verification, the change is
+**Implementation Note**: Final phase â€” after automated + manual verification, the change is
 ready to merge and archive.
 
 ---
@@ -417,32 +417,32 @@ ready to merge and archive.
 
 ### Unit Tests
 
-- `quality.test.ts` — the Risk #5 gate (clean pass, garbage reject, terse-real pass,
+- `quality.test.ts` â€” the Risk #5 gate (clean pass, garbage reject, terse-real pass,
   threshold boundary).
-- Extended `cv-parser/index.test.ts` — full dispatch/error contract incl. non-empty-garbage
+- Extended `cv-parser/index.test.ts` â€” full dispatch/error contract incl. non-empty-garbage
   handoff, mocked extractor edge.
-- `anonymizer/section-rules.test.ts` — name/company heuristics, catch + accepted-miss.
-- Extended `anonymizer/index.test.ts` — accepted-miss characterizations (body-only company,
+- `anonymizer/section-rules.test.ts` â€” name/company heuristics, catch + accepted-miss.
+- Extended `anonymizer/index.test.ts` â€” accepted-miss characterizations (body-only company,
   single-token name, address, dates, `piiCount.addresses === 0`).
 
 ### Integration Tests
 
-- `anonymizer/boundary.test.ts` — `anonymizeCV → buildAnalysisPrompt` PII-free assert over
+- `anonymizer/boundary.test.ts` â€” `anonymizeCV â†’ buildAnalysisPrompt` PII-free assert over
   the catchable-PII corpus (the decisive Risk #3 guard); optional `vi.mock("ai")` call-site
   variant.
 
 ### Manual Testing Steps
 
-1. Upload/paste obvious garbage locally → 400 with `INSUFFICIENT_CONTENT`, no analysis runs.
+1. Upload/paste obvious garbage locally â†’ 400 with `INSUFFICIENT_CONTENT`, no analysis runs.
 2. A short but real CV analyzes normally (no false rejection).
-3. Retry against a candidate with garbage stored `cv_text` → also rejected.
+3. Retry against a candidate with garbage stored `cv_text` â†’ also rejected.
 4. Spot-check boundary assertions key on real fixture PII values; confirm fixtures synthetic.
 5. Open a PR; confirm CI runs and gates on the new tests.
 
 ## Performance Considerations
 
 - The quality gate is a synchronous, cheap string scan on the front-half of the request
-  (before the `waitUntil` background pipeline) — negligible latency, no impact on the ~60s
+  (before the `waitUntil` background pipeline) â€” negligible latency, no impact on the ~60s
   analysis budget.
 - All new tests run in the node Vitest project; no jsdom or network cost added.
 
@@ -450,14 +450,14 @@ ready to merge and archive.
 
 - No DB or schema migration. The `CVParseErrorCode` union gains a member (additive,
   backward-compatible). The quality gate is a **behavior change**: previously-accepted thin
-  inputs could now be rejected — the conservative threshold plus the terse-real
+  inputs could now be rejected â€” the conservative threshold plus the terse-real
   falsifiability fixture mitigate false rejections. No backfill; existing stored analyses
   are unaffected.
 
 ## References
 
 - Research: `context/changes/testing-input-integrity-parsing-anonymization/research.md`
-- Test plan: `context/foundation/test-plan.md` (§2 Risk #3/#5, §3 Phase 2, §5 gates, §6/§7)
+- Test plan: `context/foundation/test-plan.md` (Â§2 Risk #3/#5, Â§3 Phase 2, Â§5 gates, Â§6/Â§7)
 - Phase 1 artifact pattern: `context/changes/testing-output-grounding-response-integrity/plan.md`
 - Gate chokepoint: `src/pages/api/analysis/index.ts:47-80,149-171`
 - Parser contract: `src/lib/cv-parser/index.ts:10-35`, `src/lib/cv-parser/errors.ts:1-11`
@@ -467,45 +467,45 @@ ready to merge and archive.
 
 ## Progress
 
-> Convention: `- [ ]` pending, `- [x]` done. Append ` — <commit sha>` when a step lands. Do not rename step titles. See `references/progress-format.md`.
+> Convention: `- [ ]` pending, `- [x]` done. Append ` â€” <commit sha>` when a step lands. Do not rename step titles. See `references/progress-format.md`.
 
-### Phase 1: Risk #5 — Fail-Fast Quality Gate + Parser Characterization
-
-#### Automated
-
-- [x] 1.1 `npm run test` passes incl. `quality.test.ts` + extended `index.test.ts`
-- [x] 1.2 Garbage fixture rejected with `INSUFFICIENT_CONTENT`; terse-real fixture passes
-- [x] 1.3 Lint passes: `npm run lint`
-- [x] 1.4 Build passes: `npx astro sync && npm run build`
-
-#### Manual
-
-- [x] 1.5 Local garbage upload/paste → 400, no analysis runs
-- [x] 1.6 Short-but-real CV still analyzes (no false rejection)
-- [x] 1.7 Retry against garbage stored `cv_text` is rejected
-
-### Phase 2: Risk #3 — Anonymizer Characterization + Boundary PII-Free Assert
+### Phase 1: Risk #5 â€” Fail-Fast Quality Gate + Parser Characterization
 
 #### Automated
 
-- [x] 2.1 `npm run test` passes incl. `section-rules.test.ts`, `boundary.test.ts`, extended `index.test.ts`
-- [x] 2.2 Every catchable-PII fixture → prompt with zero raw PII + expected placeholders
-- [x] 2.3 Accepted-miss characterizations assert current pass-through
-- [x] 2.4 Lint passes: `npm run lint`
+- [x] 1.1 `npm run test` passes incl. `quality.test.ts` + extended `index.test.ts` — e18040f
+- [x] 1.2 Garbage fixture rejected with `INSUFFICIENT_CONTENT`; terse-real fixture passes — e18040f
+- [x] 1.3 Lint passes: `npm run lint` — e18040f
+- [x] 1.4 Build passes: `npx astro sync && npm run build` — e18040f
 
 #### Manual
 
-- [x] 2.5 Boundary assertions key on real fixture PII values (not trivially-absent strings)
-- [x] 2.6 All `tests/fixtures/cv/` content confirmed synthetic before commit
+- [x] 1.5 Local garbage upload/paste â†’ 400, no analysis runs — e18040f
+- [x] 1.6 Short-but-real CV still analyzes (no false rejection) — e18040f
+- [x] 1.7 Retry against garbage stored `cv_text` is rejected — e18040f
+
+### Phase 2: Risk #3 â€” Anonymizer Characterization + Boundary PII-Free Assert
+
+#### Automated
+
+- [x] 2.1 `npm run test` passes incl. `section-rules.test.ts`, `boundary.test.ts`, extended `index.test.ts` — e18040f
+- [x] 2.2 Every catchable-PII fixture â†’ prompt with zero raw PII + expected placeholders — e18040f
+- [x] 2.3 Accepted-miss characterizations assert current pass-through — e18040f
+- [x] 2.4 Lint passes: `npm run lint` — e18040f
+
+#### Manual
+
+- [x] 2.5 Boundary assertions key on real fixture PII values (not trivially-absent strings) — e18040f
+- [x] 2.6 All `tests/fixtures/cv/` content confirmed synthetic before commit — e18040f
 
 ### Phase 3: Test-Plan Cookbook + Status + Gate Verification
 
 #### Automated
 
-- [x] 3.1 Full `npm run test` passes on a clean checkout
-- [x] 3.2 CI run shows new tests executing and gating (broken assert fails job, then reverted)
-- [x] 3.3 `npm run lint` and `npm run build` still pass
+- [x] 3.1 Full `npm run test` passes on a clean checkout — e18040f
+- [x] 3.2 CI run shows new tests executing and gating (broken assert fails job, then reverted) — e18040f
+- [x] 3.3 `npm run lint` and `npm run build` still pass — e18040f
 
 #### Manual
 
-- [x] 3.4 `test-plan.md` cookbook + Phase 2 status read accurately for a fresh contributor
+- [x] 3.4 `test-plan.md` cookbook + Phase 2 status read accurately for a fresh contributor — e18040f
