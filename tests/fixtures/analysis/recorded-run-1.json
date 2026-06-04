@@ -1,0 +1,25 @@
+{
+  "anonymizedText": "[CANDIDATE_NAME]\nEmail: [EMAIL]\n6+ years QA. Tools: Playwright, Postman, GitHub Actions at [COMPANY_1] and 18 months at [COMPANY_2].\nBuilt API regression suites; no mobile or Appium experience noted.",
+  "profile": {
+    "name": "Senior QA — APIs",
+    "description": "Backend API quality, contract tests, CI gates.",
+    "expected_skills": ["Playwright", "Postman", "API testing", "CI/CD"]
+  },
+  "response": {
+    "match_summary": "Strong API and Playwright alignment; mobile testing not evidenced in CV.",
+    "questions": [
+      {
+        "category": "missing_elements",
+        "question": "Expected skills include CI/CD pipelines — your CV mentions GitHub Actions but not broader pipeline ownership. What did you automate in Actions?",
+        "rationale": "Profile lists CI/CD; CV only names GitHub Actions in passing.",
+        "suggested_answer": "Outline workflow triggers, test gates, and artifact promotion."
+      },
+      {
+        "category": "contradictions",
+        "question": "You list 6+ years QA but [COMPANY_2] tenure is only 18 months — how does that reconcile with senior scope?",
+        "rationale": "Timeline in anonymized CV shows short recent tenure vs senior claim.",
+        "suggested_answer": null
+      }
+    ]
+  }
+}

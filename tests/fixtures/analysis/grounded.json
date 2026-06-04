@@ -1,0 +1,25 @@
+{
+  "anonymizedText": "[CANDIDATE_NAME] — Senior QA Engineer with 6 years experience.\nSkills: Playwright, TypeScript, CI pipelines at [COMPANY_1].\nLed test automation for a payments API; no performance or load testing mentioned.",
+  "profile": {
+    "name": "Senior QA Engineer",
+    "description": "Own test strategy and automation for a B2B SaaS product.",
+    "expected_skills": ["Playwright", "TypeScript", "k6", "API testing"]
+  },
+  "response": {
+    "match_summary": "Strong Playwright and TypeScript fit; gap on k6 load testing.",
+    "questions": [
+      {
+        "category": "missing_elements",
+        "question": "Playwright and API testing are present but k6 experience is missing. How would you load-test the payments API?",
+        "rationale": "k6 is listed in expected skills; anonymized CV text does not mention load or performance testing.",
+        "suggested_answer": "Describe k6 scripts, thresholds, and running them in CI."
+      },
+      {
+        "category": "vague_claims",
+        "question": "You mention leading test automation at [COMPANY_1] — what outcomes did Playwright coverage improve?",
+        "rationale": "Playwright is cited without measurable results.",
+        "suggested_answer": null
+      }
+    ]
+  }
+}

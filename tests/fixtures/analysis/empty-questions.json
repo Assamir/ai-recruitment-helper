@@ -1,0 +1,12 @@
+{
+  "anonymizedText": "[CANDIDATE_NAME] — QA lead with Playwright and Jest.",
+  "profile": {
+    "name": "QA Lead",
+    "description": "Matches all listed skills.",
+    "expected_skills": ["Playwright", "Jest"]
+  },
+  "response": {
+    "match_summary": "No material gaps found.",
+    "questions": []
+  }
+}

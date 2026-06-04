@@ -515,9 +515,9 @@ the change is ready to merge and archive.
 
 #### Automated
 
-- [x] 2.1 `npm run test` passes including the new component test
-- [x] 2.2 N-questions assertion fails against pre-fix `CATEGORY_LABELS` (verified once, then restored)
-- [x] 2.3 Lint passes: `npm run lint`
+- [x] 2.1 `npm run test` passes including the new component test — 82ddbf7
+- [x] 2.2 N-questions assertion fails against pre-fix `CATEGORY_LABELS` (verified once, then restored) — 82ddbf7
+- [x] 2.3 Lint passes: `npm run lint` — 82ddbf7
 
 #### Manual
 

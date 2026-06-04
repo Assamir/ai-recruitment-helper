@@ -1,0 +1,19 @@
+{
+  "anonymizedText": "[CANDIDATE_NAME] — QA Engineer.\nSkills: Playwright, Jest, manual regression at [COMPANY_1].",
+  "profile": {
+    "name": "QA Engineer",
+    "description": "Web application testing with Playwright and Jest.",
+    "expected_skills": ["Playwright", "Jest", "regression testing"]
+  },
+  "response": {
+    "match_summary": "Solid Playwright background.",
+    "questions": [
+      {
+        "category": "anomalies",
+        "question": "Your CV omits HashiCorp Vault and Terraform experience required for this platform team — how have you managed secrets?",
+        "rationale": "The role expects Terraform and Vault but neither appears in the CV or job profile.",
+        "suggested_answer": "Candidate should explain infra-as-code and secret rotation."
+      }
+    ]
+  }
+}

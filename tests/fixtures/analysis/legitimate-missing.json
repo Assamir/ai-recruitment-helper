@@ -1,0 +1,19 @@
+{
+  "anonymizedText": "[CANDIDATE_NAME] — Test engineer.\nSkills: Playwright, Cypress, API checks. No k6 or performance tooling listed.",
+  "profile": {
+    "name": "Performance-aware QA",
+    "description": "Quality for high-traffic APIs.",
+    "expected_skills": ["Playwright", "k6", "load testing"]
+  },
+  "response": {
+    "match_summary": "Playwright present; k6 missing from CV.",
+    "questions": [
+      {
+        "category": "missing_elements",
+        "question": "The role requires k6 load testing but your CV only lists Playwright and Cypress — how would you introduce k6 here?",
+        "rationale": "k6 is in expected_skills but absent from the anonymized CV.",
+        "suggested_answer": null
+      }
+    ]
+  }
+}
