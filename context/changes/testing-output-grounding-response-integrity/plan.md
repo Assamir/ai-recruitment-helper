@@ -542,9 +542,9 @@ the change is ready to merge and archive.
 
 #### Automated
 
-- [x] 4.1 CI `lint-build` job runs `npm run test`
-- [x] 4.2 A deliberately broken test fails the CI job (verified once, then reverted)
-- [x] 4.3 `npm run lint` and `npm run build` still pass in CI
+- [x] 4.1 CI `lint-build` job runs `npm run test` — 6d67527
+- [x] 4.2 A deliberately broken test fails the CI job (verified once, then reverted) — 6d67527
+- [x] 4.3 `npm run lint` and `npm run build` still pass in CI — 6d67527
 
 #### Manual
 
