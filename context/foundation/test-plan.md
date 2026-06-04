@@ -6,7 +6,7 @@
 >
 > Refresh: re-run `/10x-test-plan --refresh` when stale (see §8).
 >
-> Last updated: 2026-06-04 (Phase 1 shipped)
+> Last updated: 2026-06-04 (Phase 2 shipped)
 
 ## 1. Strategy
 
@@ -76,7 +76,7 @@ orchestrator updates Status as artifacts appear on disk.
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|---|---|---|---|---|---|
 | 1 | Output grounding & response integrity | Prove generated content references only real CV/JD input, and malformed LLM responses never render as a silent "no findings" | #1, #2 | integration (fixture-driven) + unit | **done** | context/changes/testing-output-grounding-response-integrity/ |
-| 2 | Input integrity (parsing + anonymization) | Garbage CV text is rejected not analyzed; no PII crosses the boundary on real-world formats | #5, #3 | unit (fixture corpus) + integration at boundary | not started | — |
+| 2 | Input integrity (parsing + anonymization) | Garbage CV text is rejected not analyzed; no PII crosses the boundary on real-world formats | #5, #3 | unit (fixture corpus) + integration at boundary | **done** | context/changes/testing-input-integrity-parsing-anonymization/ |
 | 3 | Data isolation & API boundary | Cross-user reads are denied; API routes reject untrusted input | #4, #7 | integration on API routes | not started | — |
 | 4 | Pipeline integration & quality gates | End-to-end orchestration holds with a mocked LLM; lock the floor in CI | #6 + cross-cutting | integration + gates | not started | — |
 
@@ -89,7 +89,7 @@ The classic test base for this project. AI-native tools (if any) carry a
 |---|---|---|---|
 | unit + integration | Vitest | 4.1.x | two projects: `node` (`tests/lib/**`) + `components` (`tests/components/**`, jsdom + RTL); `globals:true`, `@`→`src` alias |
 | API / network mocking | `vi.mock("ai")` at LLM edge | 2026-06-04 | `tests/lib/llm/client.test.ts`; grounding uses offline `(CV, JD, response)` JSON under `tests/fixtures/analysis/` |
-| CV fixture corpus | analysis JSON triples (Phase 1) | 2026-06-04 | `(anonymizedText, profile, response)` for grounding; binary `.pdf`/`.docx` corpus still Phase 2 |
+| CV fixture corpus | `tests/fixtures/cv/` text corpus (Phase 2) | 2026-06-04 | Synthetic catchable/accepted-miss strings; binary `.pdf`/`.docx` deliberately deferred — extractor edge mocked in parser unit tests |
 | e2e | none yet — optional | — | browser MCP available if a full deployed-shape failure ever needs it; not currently justified |
 | accessibility | none yet — optional | — | out of scope per §7 (UI not a priority surface) |
 | (optional) AI-native | LLM-as-judge for faithfulness — checked: 2026-06-04 | deferred | Phase 1 uses deterministic `findUngroundedClaims` in `tests/lib/analysis/faithfulness.ts`; judge only if this proves too noisy |
@@ -165,12 +165,42 @@ relevant rollout phase ships; before that, the sub-section reads
   threshold falsifiable.
 - **Never** use the model output as the oracle.
 
+### 6.7 CV quality gate (Risk #5)
+
+- **Production gate**: `assertUsableCvText` in `src/lib/cv-parser/quality.ts`, wired once
+  at the resolved-`cvText` chokepoint in `src/pages/api/analysis/index.ts` (after
+  file/paste/retry branches, before DB insert). Rejects non-empty garbage with
+  `CVParseError("INSUFFICIENT_CONTENT")` → HTTP 400 (same mapping as other parse errors).
+- **Unit tests**: `tests/lib/cv-parser/quality.test.ts` — include a **non-empty garbage**
+  fixture that MUST fail and a **terse real CV** that MUST pass (falsifiability anchors).
+- **Parser contract**: extend `tests/lib/cv-parser/index.test.ts` with mocked-extractor
+  output; `extractText` does not gate quality — the chokepoint helper does.
+
+### 6.8 Boundary PII-free assert (Risk #3)
+
+- **Decisive assert**: for each catchable fixture in `tests/fixtures/cv/catchable.ts`,
+  `buildAnalysisPrompt(anonymizeCV(cv).anonymizedText, profile)` must contain expected
+  placeholders (`[EMAIL]`, `[PHONE]`, `[CANDIDATE_NAME]`, `[COMPANY_N]`) and **none** of
+  the fixture's raw `piiValues`. Reference: `tests/lib/anonymizer/boundary.test.ts`.
+- **Accepted gaps**: characterize pass-through in `tests/lib/anonymizer/index.test.ts` and
+  `tests/fixtures/cv/accepted-miss.ts` — do not assert these are clean in the boundary test.
+- **Section heuristics**: `tests/lib/anonymizer/section-rules.test.ts`.
+- **Echo reasoning**: LLM only sees `anonymizedText`; PII echo ⊆ anonymizer misses — the
+  boundary assert covers the org-boundary surface without a separate render-layer test.
+- Optional: route the same prompt through `completeLLM` with `vi.mock("ai")` for call-site
+  fidelity (`tests/lib/llm/client.test.ts` pattern).
+
 ### 6.6 Per-rollout-phase notes
 
 **Phase 1 (2026-06-04):** Risk #2 was a pure `CATEGORY_LABELS` vocabulary bug in
 `AnalysisResults.tsx` — schema categories were correct in DB/API. Grounding helper
 needed strict salient-span rules; generic 4+ letter words produced noise. Vitest
 `projects` split keeps the node suite isolated from jsdom.
+
+**Phase 2 (2026-06-04):** Risk #5 — additive quality gate at the single `cvText`
+convergence point; `EMPTY_CONTENT` unchanged for truly empty extraction. Risk #3 —
+boundary assert at `anonymizeCV → buildAnalysisPrompt`; accepted MVP gaps documented
+with falsifiable fixtures, not silently "fixed" in tests.
 
 ## 7. What We Deliberately Don't Test
 
@@ -184,7 +214,7 @@ contributors should respect these unless the underlying assumption changes.
 
 ## 8. Freshness Ledger
 
-- Strategy (§1–§5) last reviewed: 2026-06-04
+- Strategy (§1–§5) last reviewed: 2026-06-04 (Phase 2 cookbook + status)
 - Stack versions last verified: 2026-06-04
 - AI-native tool references last verified: 2026-06-04
 

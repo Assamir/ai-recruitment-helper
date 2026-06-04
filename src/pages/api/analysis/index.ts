@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { createClient } from "@/lib/supabase";
 import { jsonResponse } from "@/lib/api/response";
 import { extractText, CVParseError } from "@/lib/cv-parser/index";
+import { assertUsableCvText } from "@/lib/cv-parser/quality";
 import { anonymizeCV } from "@/lib/anonymizer/index";
 import { getLLMConfig, createLLMModel, completeLLM } from "@/lib/llm";
 import { AnalysisResponseSchema } from "@/lib/analysis/schema";
@@ -77,6 +78,15 @@ export const POST: APIRoute = async (context) => {
     fileName = "pasted-cv.txt";
   } else {
     return jsonResponse({ error: "Provide a file, cv_text, or candidate_id", code: "BAD_REQUEST" }, 400);
+  }
+
+  try {
+    assertUsableCvText(cvText);
+  } catch (err) {
+    if (err instanceof CVParseError) {
+      return jsonResponse({ error: err.message, code: err.code }, 400);
+    }
+    throw err;
   }
 
   // ── Resolve candidate name (recruiter input wins, else CV header heuristic) ──

@@ -91,6 +91,51 @@ describe("anonymizeCV — edge cases", () => {
   });
 });
 
+describe("anonymizeCV — accepted MVP gaps (documented pass-through)", () => {
+  it("accepted gap: body-only company survives", () => {
+    const cv = `
+Jordan Ellis
+QA Engineer
+Worked at Horizon Made Up Corp across multiple releases.
+`.trim();
+    const { anonymizedText } = anonymizeCV(cv);
+    expect(anonymizedText).toContain("Horizon Made Up Corp");
+  });
+
+  it("accepted gap: single-token header name survives", () => {
+    const cv = "Madison\nQA Engineer\nSkills: Playwright.";
+    const { anonymizedText, piiCount } = anonymizeCV(cv);
+    expect(anonymizedText).toContain("Madison");
+    expect(piiCount.names).toBe(0);
+  });
+
+  it("accepted gap: phone without + or US shape survives", () => {
+    const cv = "Casey Ng\nPhone: 123456789012";
+    const { anonymizedText, piiCount } = anonymizeCV(cv);
+    expect(anonymizedText).toContain("123456789012");
+    expect(piiCount.phones).toBe(0);
+  });
+
+  it("accepted gap: bare domain survives (no www/linkedin prefix)", () => {
+    const cv = "Casey Ng\nSite: invented-portfolio.example";
+    const { anonymizedText } = anonymizeCV(cv);
+    expect(anonymizedText).toContain("invented-portfolio.example");
+  });
+
+  it("accepted gap: street address survives with addresses count 0", () => {
+    const cv = "Casey Ng\nAddress: 42 Fictional Lane, Made Up City";
+    const { anonymizedText, piiCount } = anonymizeCV(cv);
+    expect(anonymizedText).toContain("42 Fictional Lane");
+    expect(piiCount.addresses).toBe(0);
+  });
+
+  it("accepted gap: dd/mm/yyyy date survives (findDates unused)", () => {
+    const cv = "Casey Ng\nStart: 15/03/2024";
+    const { anonymizedText } = anonymizeCV(cv);
+    expect(anonymizedText).toContain("15/03/2024");
+  });
+});
+
 describe("anonymizeCV — SYNTHETIC_CV_TEXT", () => {
   it("detects company names in pipe-separated experience lines", () => {
     const { anonymizedText, piiCount } = anonymizeCV(SYNTHETIC_CV_TEXT);

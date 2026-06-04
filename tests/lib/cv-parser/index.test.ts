@@ -74,4 +74,12 @@ describe("extractText", () => {
     const file = makeFile("cv.pdf", "application/pdf");
     await expect(extractText(file)).rejects.toBe(original);
   });
+
+  it("returns non-empty garbage extractor output unchanged (quality gate is downstream)", async () => {
+    const garbage = `%PDF-1.4 obj stream xC5@@@@####....`;
+    mockExtractPdfText.mockResolvedValue(garbage);
+    const file = makeFile("cv.pdf", "application/pdf");
+    const result = await extractText(file);
+    expect(result).toBe(garbage);
+  });
 });
