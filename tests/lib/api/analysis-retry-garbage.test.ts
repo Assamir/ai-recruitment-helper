@@ -3,6 +3,8 @@
  * before any analysis row is created.
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { CANDIDATE_ID, JOB_PROFILE_ID, USER_A } from "../../helpers/ids";
+
 const NON_EMPTY_GARBAGE_TEXT = `
 %PDF-1.4
 1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj
@@ -19,9 +21,7 @@ vi.mock("@/lib/llm", () => ({
 
 import { POST } from "@/pages/api/analysis/index";
 
-const USER_ID = "11111111-1111-1111-1111-111111111111";
-const CANDIDATE_ID = "22222222-2222-2222-2222-222222222222";
-const JOB_PROFILE_ID = "33333333-3333-3333-3333-333333333333";
+const USER_ID = USER_A;
 
 const analysesInsert = vi.fn();
 

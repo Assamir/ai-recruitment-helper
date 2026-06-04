@@ -1,3 +1,5 @@
+/* global process, console, fetch */
+/* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unnecessary-condition, no-console -- manual verification script */
 /**
  * Manual API checks 1.5 / 1.6 / 1.7 — credentials via env only (never commit secrets).
  *

@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { createClient } from "@/lib/supabase";
 import { jsonResponse } from "@/lib/api/response";
+import { isUuid } from "@/lib/api/uuid";
 
 export const GET: APIRoute = async (context) => {
   if (!context.locals.user) {
@@ -10,6 +11,9 @@ export const GET: APIRoute = async (context) => {
   const { id } = context.params;
   if (!id) {
     return jsonResponse({ error: "Analysis ID required", code: "BAD_REQUEST" }, 400);
+  }
+  if (!isUuid(id)) {
+    return jsonResponse({ error: "Invalid analysis ID format", code: "BAD_REQUEST" }, 400);
   }
 
   const supabase = createClient(context.request.headers, context.cookies);

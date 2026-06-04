@@ -28,6 +28,14 @@ export default defineConfig({
           setupFiles: ["tests/setup/dom.ts"],
         },
       },
+      {
+        extends: true,
+        test: {
+          name: "rls",
+          environment: "node",
+          include: ["tests/rls/**/*.test.ts"],
+        },
+      },
     ],
   },
 });

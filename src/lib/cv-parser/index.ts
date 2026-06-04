@@ -2,12 +2,18 @@ import { CVParseError } from "./errors";
 import { extractPdfText } from "./pdf";
 import { extractDocxText } from "./docx";
 
+/** Matches client cap in FileUpload.tsx (MAX_SIZE_MB = 5). */
+export const MAX_CV_FILE_BYTES = 5 * 1024 * 1024;
+
 const EXTRACTORS: Partial<Record<string, (buffer: ArrayBuffer) => Promise<string>>> = {
   "application/pdf": extractPdfText,
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document": extractDocxText,
 };
 
 export async function extractText(file: File): Promise<string> {
+  if (file.size > MAX_CV_FILE_BYTES) {
+    throw new CVParseError("FILE_TOO_LARGE", "File exceeds the 5 MB limit.");
+  }
   const extractor = EXTRACTORS[file.type];
 
   if (!extractor) {

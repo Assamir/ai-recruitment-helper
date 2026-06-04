@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { createClient } from "@/lib/supabase";
 import { jsonResponse } from "@/lib/api/response";
+import { isUuid } from "@/lib/api/uuid";
 import { extractText, CVParseError } from "@/lib/cv-parser/index";
 import { assertUsableCvText } from "@/lib/cv-parser/quality";
 import { anonymizeCV } from "@/lib/anonymizer/index";
@@ -39,11 +40,18 @@ export const POST: APIRoute = async (context) => {
   if (!jobProfileId || typeof jobProfileId !== "string") {
     return jsonResponse({ error: "job_profile_id is required", code: "BAD_REQUEST" }, 400);
   }
+  if (!isUuid(jobProfileId)) {
+    return jsonResponse({ error: "Invalid job_profile_id format", code: "BAD_REQUEST" }, 400);
+  }
 
   // ── CV text extraction (synchronous front-half) ──────────────────────────
   let cvText: string;
   let fileName: string | null = null;
   let candidateId: string | null = typeof candidateIdField === "string" ? candidateIdField : null;
+
+  if (candidateId && !isUuid(candidateId)) {
+    return jsonResponse({ error: "Invalid candidate_id format", code: "BAD_REQUEST" }, 400);
+  }
 
   if (candidateId) {
     // Retry path: read stored CV text from existing candidate record

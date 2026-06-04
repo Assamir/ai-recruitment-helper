@@ -6,7 +6,7 @@
 >
 > Refresh: re-run `/10x-test-plan --refresh` when stale (see §8).
 >
-> Last updated: 2026-06-04 (Phase 2 shipped)
+> Last updated: 2026-06-04 (Phase 3 shipped)
 
 ## 1. Strategy
 
@@ -77,7 +77,7 @@ orchestrator updates Status as artifacts appear on disk.
 |---|---|---|---|---|---|---|
 | 1 | Output grounding & response integrity | Prove generated content references only real CV/JD input, and malformed LLM responses never render as a silent "no findings" | #1, #2 | integration (fixture-driven) + unit | **done** | context/changes/testing-output-grounding-response-integrity/ |
 | 2 | Input integrity (parsing + anonymization) | Garbage CV text is rejected not analyzed; no PII crosses the boundary on real-world formats | #5, #3 | unit (fixture corpus) + integration at boundary | **done** | context/changes/testing-input-integrity-parsing-anonymization/ |
-| 3 | Data isolation & API boundary | Cross-user reads are denied; API routes reject untrusted input | #4, #7 | integration on API routes | not started | — |
+| 3 | Data isolation & API boundary | Cross-user reads are denied; API routes reject untrusted input | #4, #7 | integration on API routes | **done** | context/changes/testing-data-isolation-api-boundary/ |
 | 4 | Pipeline integration & quality gates | End-to-end orchestration holds with a mocked LLM; lock the floor in CI | #6 + cross-cutting | integration + gates | not started | — |
 
 ## 4. Stack
@@ -87,7 +87,7 @@ The classic test base for this project. AI-native tools (if any) carry a
 
 | Layer | Tool | Version | Notes |
 |---|---|---|---|
-| unit + integration | Vitest | 4.1.x | two projects: `node` (`tests/lib/**`) + `components` (`tests/components/**`, jsdom + RTL); `globals:true`, `@`→`src` alias |
+| unit + integration | Vitest | 4.1.x | three projects: `node` (`tests/lib/**`), `components` (jsdom), `rls` (`tests/rls/**`, gated by env); `globals:true`, `@`→`src` alias |
 | API / network mocking | `vi.mock("ai")` at LLM edge | 2026-06-04 | `tests/lib/llm/client.test.ts`; grounding uses offline `(CV, JD, response)` JSON under `tests/fixtures/analysis/` |
 | CV fixture corpus | `tests/fixtures/cv/` text corpus (Phase 2) | 2026-06-04 | Synthetic catchable/accepted-miss strings; binary `.pdf`/`.docx` deliberately deferred — extractor edge mocked in parser unit tests |
 | e2e | none yet — optional | — | browser MCP available if a full deployed-shape failure ever needs it; not currently justified |
@@ -114,7 +114,7 @@ lands; before that, the gate is `planned`.
 |---|---|---|---|
 | lint + typecheck | local + CI | required (already wired) | syntactic / type drift |
 | unit + integration | local + CI | required after §3 Phase 1 | grounding + parse + logic regressions |
-| API / boundary integration | local + CI | required after §3 Phase 3 | data-isolation + input-validation regressions |
+| API / boundary integration | local + CI (`npm run test`) | **required** (Phase 3) | data-isolation + input-validation regressions; real-RLS lane gated (`npx vitest run --project rls`) |
 | pipeline integration (mocked LLM) | CI on PR | required after §3 Phase 4 | broken cross-layer orchestration |
 | analysis-latency / error observability | Cloudflare Workers logs/metrics | recommended after §3 Phase 4 | the ~60s budget + silent failures (not a unit test) |
 | pre-prod smoke | between merge + prod | optional | environment-specific (workerd) failures |
@@ -149,8 +149,23 @@ relevant rollout phase ships; before that, the sub-section reads
 
 ### 6.4 Adding a test for a new API endpoint
 
-- TBD — see §3 Phase 3. Pattern: exercise the route handler, assert response
-  shape AND side-effects/authorization, mock the external HTTP edge only.
+- **Handler tests (always-on, CI):** import the `APIRoute` handler; build context with
+  `tests/helpers/api-context.ts` (`makeApiContext`); mock `@/lib/supabase` to return
+  `makeFakeSupabase` from `tests/helpers/fake-supabase.ts`. The fake **filters rows by
+  `actingUserId`** — it models the handler contract ("zero owned rows → 404"), **not**
+  real Postgres RLS. Mock `@/lib/llm` for `POST /api/analysis`; stub `locals.cfContext.waitUntil`.
+- **404, never 403:** cross-user reads assert `status === 404` and `code === "NOT_FOUND"`
+  (existence-hiding contract in `src/pages/api/analysis/[id]/index.ts`).
+- **Real RLS (gated):** `tests/rls/*.test.ts` in the Vitest `rls` project — source of truth
+  for Risk #4. Guard with `describe.skipIf(!process.env.SUPABASE_TEST_URL)`. Env:
+  `SUPABASE_TEST_URL`, `SUPABASE_TEST_ANON_KEY` (local: `supabase start`, then copy from
+  `supabase status`). Run: `npx vitest run --project rls`.
+- **Input validation:** synthetic `File` objects (no binary fixtures); assert 4xx and no
+  DB insert on rejection. Reference: `tests/lib/api/analysis-input-validation.test.ts`,
+  `tests/lib/api/auth-input-validation.test.ts`.
+- **Reference isolation suite:** `tests/lib/api/analysis-isolation.test.ts`.
+- **Config guard:** `isServiceRoleKey` in `src/lib/supabase-key.ts` — unit test in
+  `tests/lib/supabase/key.test.ts`.
 
 ### 6.5 Adding a grounding/faithfulness test for analysis output
 
@@ -202,6 +217,12 @@ convergence point; `EMPTY_CONTENT` unchanged for truly empty extraction. Risk #3
 boundary assert at `anonymizeCV → buildAnalysisPrompt`; accepted MVP gaps documented
 with falsifiable fixtures, not silently "fixed" in tests.
 
+**Phase 3 (2026-06-04):** Risk #4 — handler contract via ownership-enforcing fake;
+real RLS in gated `tests/rls/` lane; `service_role` key refused in `createClient`.
+Risk #7 — server file-size cap (`MAX_CV_FILE_BYTES`), UUID guards, auth `formData`
+try/catch. **Accepted follow-ups:** magic-byte verification, Zod request schemas, SSR
+foreign-id paths, `candidates` UPDATE RLS (Phase 4).
+
 ## 7. What We Deliberately Don't Test
 
 Exclusions agreed during the rollout (Phase 2 interview, Q5). Future
@@ -214,7 +235,7 @@ contributors should respect these unless the underlying assumption changes.
 
 ## 8. Freshness Ledger
 
-- Strategy (§1–§5) last reviewed: 2026-06-04 (Phase 2 cookbook + status)
+- Strategy (§1–§5) last reviewed: 2026-06-04 (Phase 3 cookbook + status)
 - Stack versions last verified: 2026-06-04
 - AI-native tool references last verified: 2026-06-04
 

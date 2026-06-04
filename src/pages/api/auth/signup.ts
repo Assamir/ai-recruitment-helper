@@ -2,9 +2,18 @@ import type { APIRoute } from "astro";
 import { createClient } from "@/lib/supabase";
 
 export const POST: APIRoute = async (context) => {
-  const form = await context.request.formData();
-  const email = form.get("email") as string;
-  const password = form.get("password") as string;
+  let form: FormData;
+  try {
+    form = await context.request.formData();
+  } catch {
+    return context.redirect(`/auth/signup?error=${encodeURIComponent("Invalid form data")}`);
+  }
+
+  const email = form.get("email");
+  const password = form.get("password");
+  if (typeof email !== "string" || typeof password !== "string" || !email || !password) {
+    return context.redirect(`/auth/signup?error=${encodeURIComponent("Email and password are required")}`);
+  }
 
   const supabase = createClient(context.request.headers, context.cookies);
   if (!supabase) {
