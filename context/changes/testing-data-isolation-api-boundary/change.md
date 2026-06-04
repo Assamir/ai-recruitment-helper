@@ -1,7 +1,7 @@
 ---
 change_id: testing-data-isolation-api-boundary
 title: Data isolation & API boundary
-status: implementing
+status: implemented
 created: 2026-06-04
 updated: 2026-06-04
 archived_at: null

@@ -401,77 +401,77 @@ No data migration. The `SUPABASE_KEY` guard is backward-compatible for anon keys
 
 #### Automated
 
-- [x] 1.1 Type checking passes (astro sync + tsc/lint)
-- [x] 1.2 Linting passes (npm run lint)
-- [x] 1.3 Smoke test importing both helpers runs (npm run test)
+- [x] 1.1 Type checking passes (astro sync + tsc/lint) — 8daacca
+- [x] 1.2 Linting passes (npm run lint) — 8daacca
+- [x] 1.3 Smoke test importing both helpers runs (npm run test) — 8daacca
 
 #### Manual
 
-- [x] 1.4 makeApiContext shape accepted by an analysis handler signature
-- [x] 1.5 Fake's user_id filtering is the only place ownership is modeled
+- [x] 1.4 makeApiContext shape accepted by an analysis handler signature — 8daacca
+- [x] 1.5 Fake's user_id filtering is the only place ownership is modeled — 8daacca
 
 ### Phase 2: Risk #4 — route-handler isolation tests (fake client)
 
 #### Automated
 
-- [x] 2.1 Linting passes
-- [x] 2.2 Isolation tests pass (npm run test)
-- [x] 2.3 Cross-user cases assert 404/NOT_FOUND (no 403)
+- [x] 2.1 Linting passes — 8daacca
+- [x] 2.2 Isolation tests pass (npm run test) — 8daacca
+- [x] 2.3 Cross-user cases assert 404/NOT_FOUND (no 403) — 8daacca
 
 #### Manual
 
-- [x] 2.4 Cross-user tests would fail without the user_id filter (falsifiability)
-- [x] 2.5 Matrix matches research status table
+- [x] 2.4 Cross-user tests would fail without the user_id filter (falsifiability) — 8daacca
+- [x] 2.5 Matrix matches research status table — 8daacca
 
 ### Phase 3: Risk #4 — real-RLS lane (gated)
 
 #### Automated
 
-- [x] 3.1 npm run test passes with no SUPABASE_TEST_URL (lane skipped)
-- [x] 3.2 Linting passes
-- [x] 3.3 With local Supabase + env, npx vitest run --project rls passes (cross-user select empty)
+- [x] 3.1 npm run test passes with no SUPABASE_TEST_URL (lane skipped) — 8daacca
+- [x] 3.2 Linting passes — 8daacca
+- [x] 3.3 With local Supabase + env, npx vitest run --project rls passes (cross-user select empty) — 8daacca
 
 #### Manual
 
-- [x] 3.4 Reviewer runs the lane locally and sees real RLS denial
-- [x] 3.5 Lane clearly labeled as RLS source of truth vs the fake
+- [x] 3.4 Reviewer runs the lane locally and sees real RLS denial — 8daacca
+- [x] 3.5 Lane clearly labeled as RLS source of truth vs the fake — 8daacca
 
 ### Phase 4: Risk #4 blast-radius — SUPABASE_KEY anon-key guard
 
 #### Automated
 
-- [x] 4.1 Linting + types pass
-- [x] 4.2 Detector unit tests pass
-- [x] 4.3 Existing analysis tests still pass
+- [x] 4.1 Linting + types pass — 8daacca
+- [x] 4.2 Detector unit tests pass — 8daacca
+- [x] 4.3 Existing analysis tests still pass — 8daacca
 
 #### Manual
 
-- [x] 4.4 Real anon key still constructs a client (no false positive)
-- [x] 4.5 console.error message is actionable
+- [x] 4.4 Real anon key still constructs a client (no false positive) — 8daacca
+- [x] 4.5 console.error message is actionable — 8daacca
 
 ### Phase 5: Risk #7 — input hardening + tests
 
 #### Automated
 
-- [x] 5.1 Linting + types pass
-- [x] 5.2 Input-validation tests pass
-- [x] 5.3 Garbage-id test asserts 400 not 500
-- [x] 5.4 Oversized-file rejected before any insert
+- [x] 5.1 Linting + types pass — 8daacca
+- [x] 5.2 Input-validation tests pass — 8daacca
+- [x] 5.3 Garbage-id test asserts 400 not 500 — 8daacca
+- [x] 5.4 Oversized-file rejected before any insert — 8daacca
 
 #### Manual
 
-- [x] 5.5 File-size cap matches client MAX_SIZE_MB
-- [x] 5.6 Auth-route hardening preserves success redirect (§7)
-- [x] 5.7 Deferred gaps (magic-bytes, Zod) documented, not silently closed
+- [x] 5.5 File-size cap matches client MAX_SIZE_MB — 8daacca
+- [x] 5.6 Auth-route hardening preserves success redirect (§7) — 8daacca
+- [x] 5.7 Deferred gaps (magic-bytes, Zod) documented, not silently closed — 8daacca
 
 ### Phase 6: Cookbook + quality gate
 
 #### Automated
 
-- [x] 6.1 npm run test and npm run lint pass
-- [x] 6.2 npm run build passes
+- [x] 6.1 npm run test and npm run lint pass — 8daacca
+- [x] 6.2 npm run build passes — 8daacca
 
 #### Manual
 
-- [x] 6.3 §6.4 cookbook actionable for a new contributor
-- [x] 6.4 §3 status + §5 gate reflect reality
+- [x] 6.3 §6.4 cookbook actionable for a new contributor — 8daacca
+- [x] 6.4 §3 status + §5 gate reflect reality — 8daacca
