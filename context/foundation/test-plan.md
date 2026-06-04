@@ -6,7 +6,7 @@
 >
 > Refresh: re-run `/10x-test-plan --refresh` when stale (see §8).
 >
-> Last updated: 2026-06-02 (Phase 1 change opened)
+> Last updated: 2026-06-04 (Phase 1 shipped)
 
 ## 1. Strategy
 
@@ -75,7 +75,7 @@ orchestrator updates Status as artifacts appear on disk.
 
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|---|---|---|---|---|---|
-| 1 | Output grounding & response integrity | Prove generated content references only real CV/JD input, and malformed LLM responses never render as a silent "no findings" | #1, #2 | integration (fixture-driven) + unit | change opened | context/changes/testing-output-grounding-response-integrity/ |
+| 1 | Output grounding & response integrity | Prove generated content references only real CV/JD input, and malformed LLM responses never render as a silent "no findings" | #1, #2 | integration (fixture-driven) + unit | **done** | context/changes/testing-output-grounding-response-integrity/ |
 | 2 | Input integrity (parsing + anonymization) | Garbage CV text is rejected not analyzed; no PII crosses the boundary on real-world formats | #5, #3 | unit (fixture corpus) + integration at boundary | not started | — |
 | 3 | Data isolation & API boundary | Cross-user reads are denied; API routes reject untrusted input | #4, #7 | integration on API routes | not started | — |
 | 4 | Pipeline integration & quality gates | End-to-end orchestration holds with a mocked LLM; lock the floor in CI | #6 + cross-cutting | integration + gates | not started | — |
@@ -87,12 +87,12 @@ The classic test base for this project. AI-native tools (if any) carry a
 
 | Layer | Tool | Version | Notes |
 |---|---|---|---|
-| unit + integration | Vitest | 4.1.x | configured; `globals:true`, `passWithNoTests:true`, `@`→`src` alias; 11 tests today, all under `tests/lib/` |
-| API / network mocking | none yet — see Phase 1/3 | — | recorded LLM-response fixtures + edge mock; pick MSW or a fetch stub during Phase 1 research |
-| CV fixture corpus | none yet — see Phase 2 | — | real-ish `.pdf`/`.docx` samples incl. empty/scanned/odd formats |
+| unit + integration | Vitest | 4.1.x | two projects: `node` (`tests/lib/**`) + `components` (`tests/components/**`, jsdom + RTL); `globals:true`, `@`→`src` alias |
+| API / network mocking | `vi.mock("ai")` at LLM edge | 2026-06-04 | `tests/lib/llm/client.test.ts`; grounding uses offline `(CV, JD, response)` JSON under `tests/fixtures/analysis/` |
+| CV fixture corpus | analysis JSON triples (Phase 1) | 2026-06-04 | `(anonymizedText, profile, response)` for grounding; binary `.pdf`/`.docx` corpus still Phase 2 |
 | e2e | none yet — optional | — | browser MCP available if a full deployed-shape failure ever needs it; not currently justified |
 | accessibility | none yet — optional | — | out of scope per §7 (UI not a priority surface) |
-| (optional) AI-native | LLM-as-judge for faithfulness — checked: 2026-06-02 | n/a | use ONLY if deterministic entailment in Phase 1 can't catch ungrounded output cheaply |
+| (optional) AI-native | LLM-as-judge for faithfulness — checked: 2026-06-04 | deferred | Phase 1 uses deterministic `findUngroundedClaims` in `tests/lib/analysis/faithfulness.ts`; judge only if this proves too noisy |
 
 **Stack grounding tools (current session):**
 - Docs: Context7 — available for Astro 6 / Vitest 4 / Supabase / Cloudflare Workers test setup and current APIs; checked: 2026-06-02
@@ -134,9 +134,13 @@ relevant rollout phase ships; before that, the sub-section reads
 
 ### 6.2 Adding an integration test
 
-- TBD — see §3 Phase 1 (LLM-response-fixture grounding pattern) and Phase 3
-  (API-route boundary pattern). Mocking policy: mock only at the network
-  edge (LLM HTTP call); never mock internal modules.
+- **Grounding (fixture-driven)**: load a triple from `tests/fixtures/analysis/*.json`
+  (`anonymizedText`, `profile`, validated `response`). Assert with
+  `findUngroundedClaims` in `tests/lib/analysis/faithfulness.ts` — zero findings
+  for grounded runs; ≥1 finding for known-bad fabricated spans.
+- **API routes (later)**: see §3 Phase 3 — exercise handlers, mock only the external
+  HTTP edge; never mock internal modules.
+- **Reference**: `tests/lib/analysis/faithfulness.test.ts`, `tests/lib/llm/client.test.ts`.
 
 ### 6.3 Adding an e2e test
 
@@ -150,14 +154,23 @@ relevant rollout phase ships; before that, the sub-section reads
 
 ### 6.5 Adding a grounding/faithfulness test for analysis output
 
-- TBD — see §3 Phase 1. Pattern: feed a recorded `(CV, JD, LLM-response)`
-  fixture; assert every claim referenced in the output traces to a span in
-  the input. The input documents are the oracle — never the model output.
+- **Oracle**: `anonymizedText` + `profile.name` + `profile.description` +
+  `profile.expected_skills` (same join as `buildAnalysisPrompt`).
+- **Helper**: `findUngroundedClaims(oracle, response)` in
+  `tests/lib/analysis/faithfulness.ts` — salient-span extraction + token/bigram
+  overlap (threshold `0.55`); whitelists anonymizer placeholders
+  (`[CANDIDATE_NAME]`, `[EMAIL]`, `[PHONE]`, `[URL]`, `[COMPANY_N]`).
+- **Fixtures**: add JSON under `tests/fixtures/analysis/`; include one deliberate
+  ungrounded triple (fabricated skill absent from CV and profile) to keep the
+  threshold falsifiable.
+- **Never** use the model output as the oracle.
 
 ### 6.6 Per-rollout-phase notes
 
-(Optional. After each phase lands, `/10x-implement` appends a 2-3 line note
-here capturing anything surprising the rollout phase taught.)
+**Phase 1 (2026-06-04):** Risk #2 was a pure `CATEGORY_LABELS` vocabulary bug in
+`AnalysisResults.tsx` — schema categories were correct in DB/API. Grounding helper
+needed strict salient-span rules; generic 4+ letter words produced noise. Vitest
+`projects` split keeps the node suite isolated from jsdom.
 
 ## 7. What We Deliberately Don't Test
 
@@ -171,9 +184,9 @@ contributors should respect these unless the underlying assumption changes.
 
 ## 8. Freshness Ledger
 
-- Strategy (§1–§5) last reviewed: 2026-06-02
-- Stack versions last verified: 2026-06-02
-- AI-native tool references last verified: 2026-06-02
+- Strategy (§1–§5) last reviewed: 2026-06-04
+- Stack versions last verified: 2026-06-04
+- AI-native tool references last verified: 2026-06-04
 
 Refresh (`/10x-test-plan --refresh`) when:
 

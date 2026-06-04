@@ -528,10 +528,10 @@ the change is ready to merge and archive.
 
 #### Automated
 
-- [x] 3.1 `npm run test` passes including `faithfulness.test.ts`
-- [x] 3.2 Ungrounded fixture is flagged (≥1 finding)
-- [x] 3.3 Grounded + legitimate-missing fixtures produce zero findings
-- [x] 3.4 Lint passes: `npm run lint`
+- [x] 3.1 `npm run test` passes including `faithfulness.test.ts` — db11dac
+- [x] 3.2 Ungrounded fixture is flagged (≥1 finding) — db11dac
+- [x] 3.3 Grounded + legitimate-missing fixtures produce zero findings — db11dac
+- [x] 3.4 Lint passes: `npm run lint` — db11dac
 
 #### Manual
 
