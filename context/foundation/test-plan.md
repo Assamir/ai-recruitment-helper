@@ -6,7 +6,7 @@
 >
 > Refresh: re-run `/10x-test-plan --refresh` when stale (see §8).
 >
-> Last updated: 2026-06-05 (Phase 4 shipped)
+> Last updated: 2026-06-05 (refresh: added Risk #8 + Phase 5 main-flow E2E)
 
 ## 1. Strategy
 
@@ -50,6 +50,7 @@ research's job, see §1 principle #3).
 | 5 | Garbage CV text from `unpdf`/`docx` parsing (empty/scanned PDF, odd format) feeds the pipeline silently → analysis looks correct but is built on nothing | High | Medium | PRD FR-001 Socratic (fragile parsing); AGENTS.md workerd≠Node warning; hot-spot `src/lib/cv-parser` (6/30d) |
 | 6 | Analysis pipeline breaks at an integration boundary (upload→anonymize→LLM→parse→store) under real conditions, or fails silently instead of erroring cleanly | Medium | Medium | roadmap S-01 unknowns; AGENTS.md (deploy kills in-flight, workerd compat); hot-spot `src/pages/api` (12/30d), `src/components/analysis` (8/30d) |
 | 7 | API routes accept unvalidated input (oversized file, wrong type, malformed body) → crash or undefined behavior | Medium | Medium | PRD FR-001/FR-003; abuse lens (untrusted input); hot-spot `src/pages/api` (12/30d) |
+| 8 | After login, the main analysis flow fails through the actual UI — components/pages/client-fetch/results don't wire together, so a recruiter pastes CV text, submits, and never reaches a rendered result (blank screen, stuck progress, silent error, or crash). Auth mechanism excluded | High | Medium | Refresh interview 2026-06-05 ("główne flow nie działa na UI; integracja między komponentami"); hot-spot `src/pages/api` (18/30d), `src/components/analysis` (9/30d), `src/pages/dashboard` (8/30d); §4 e2e gap; roadmap S-01 north star |
 
 > Noted, not a row: mass-triggering the costly ~60s LLM analysis is High-impact
 > × **Low**-likelihood for an internal small-scale tool (`target_scale: small`).
@@ -66,6 +67,7 @@ research's job, see §1 principle #3).
 | #5 | Empty / garbage parse output is detected and rejected, not passed downstream as valid CV text | "parser returned a string ⇒ parse succeeded" | what the parser returns for empty/scanned/odd files; how downstream detects "no usable text" | unit with a real-ish CV fixture corpus (incl. empty/scanned) | a single clean fixture; asserting only "no throw" |
 | #6 | The orchestration holds together with a mocked LLM edge; failures surface as clean errors, not false success | "happy path passing ⇒ pipeline is sound" | the integration seams and error translation across the chain | integration with the LLM mocked at the network edge | over-mocking internal modules; e2e where integration suffices |
 | #7 | Oversized / wrong-type / malformed input is rejected with a clean 4xx | "client-side validation is enough" (server must re-validate) | server-side validation entry points on each route | integration on API routes | trusting client-side validation; happy-path-only |
+| #8 | A logged-in user pastes CV text, submits, and reaches a rendered results view (categorized questions / match summary) with the LLM stubbed — no blank screen, stuck progress, or unhandled error | "Phase 4 handler integration passing ⇒ the browser flow works" (client fetch, progress UI, results render are untested at browser level) | the new-analysis entry route, paste→client→API path, how status/progress is delivered (poll vs stream), where results render, and the cleanest seam to stub the LLM network edge for a browser run | one Playwright / browser-MCP happy-path E2E against dev/preview, LLM stubbed at the network edge, paste path only | asserting LLM **content** (oracle problem — Phase 1); brittle UI snapshot / exact-pixel assertions (§7); an E2E matrix where one happy path gives the signal |
 
 ## 3. Phased Rollout
 
@@ -79,6 +81,7 @@ orchestrator updates Status as artifacts appear on disk.
 | 2 | Input integrity (parsing + anonymization) | Garbage CV text is rejected not analyzed; no PII crosses the boundary on real-world formats | #5, #3 | unit (fixture corpus) + integration at boundary | **done** | context/changes/testing-input-integrity-parsing-anonymization/ |
 | 3 | Data isolation & API boundary | Cross-user reads are denied; API routes reject untrusted input | #4, #7 | integration on API routes | **done** | context/changes/testing-data-isolation-api-boundary/ |
 | 4 | Pipeline integration & quality gates | End-to-end orchestration holds with a mocked LLM; lock the floor in CI | #6 + cross-cutting | integration + gates | **done** | context/changes/testing-pipeline-integration-quality-gates/ |
+| 5 | Main-flow E2E (paste path) | Prove the logged-in paste→process→result loop holds end-to-end in a browser with the LLM stubbed at the network edge | #8 | e2e (Playwright/browser, LLM stubbed) | **change opened** | context/changes/testing-main-flow-e2e/ |
 
 ## 4. Stack
 
