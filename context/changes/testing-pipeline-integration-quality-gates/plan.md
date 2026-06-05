@@ -477,14 +477,14 @@ backward-compatible (`wrangler rollback` does not revert schema — AGENTS.md).
 
 #### Automated
 
-- [x] 4.1 `npm run lint` passes — 1ceca1a
-- [x] 4.2 `npm run typecheck` passes — 1ceca1a
-- [x] 4.3 `npm run test` passes (pipeline included; RLS self-skips) — 1ceca1a
-- [x] 4.4 `npm run build` passes — 1ceca1a
-- [x] 4.5 CI `lint-build` runs the new `npm run typecheck` step (verify in Actions) — 1ceca1a
+- [x] 4.1 `npm run lint` passes — 1fdc941
+- [x] 4.2 `npm run typecheck` passes — 1fdc941
+- [x] 4.3 `npm run test` passes (pipeline included; RLS self-skips) — 1fdc941
+- [x] 4.4 `npm run build` passes — 1fdc941
+- [x] 4.5 CI `lint-build` runs the new `npm run typecheck` step (verify in Actions) — 1fdc941
 
 #### Manual
 
-- [x] 4.6 Fresh clone + `npm install` installs only Lefthook hooks; commit triggers Lefthook, no lint-staged — 1ceca1a
-- [x] 4.7 `AGENTS.md` and `test-plan.md` §3/§5/§6 match shipped state — 1ceca1a
+- [x] 4.6 Fresh clone + `npm install` installs only Lefthook hooks; commit triggers Lefthook, no lint-staged — 1fdc941
+- [x] 4.7 `AGENTS.md` and `test-plan.md` §3/§5/§6 match shipped state — 1fdc941
 - [ ] 4.8 PR CI shows a distinct, named typecheck step
