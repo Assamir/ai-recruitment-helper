@@ -133,6 +133,14 @@ class Chain implements PromiseLike<ExecResult> {
   }
 
   private execute(): Promise<ExecResult> {
+    if (this.op === "insert" && this.insertPayload) {
+      const payloads = Array.isArray(this.insertPayload) ? this.insertPayload : [this.insertPayload];
+      const list = this.allTables[this.table as keyof FakeSupabaseTables] ?? [];
+      const inserted = payloads.map((row) => ({ id: crypto.randomUUID(), ...row }));
+      list.push(...inserted);
+      (this.allTables as Record<string, Row[]>)[this.table] = list;
+      return Promise.resolve({ data: inserted, error: null });
+    }
     if (this.op === "delete") {
       const rows = this.matched();
       const key = this.table as keyof FakeSupabaseTables;

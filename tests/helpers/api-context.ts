@@ -6,6 +6,7 @@ export interface MakeApiContextOpts {
   params?: Record<string, string>;
   request?: Request;
   url?: string;
+  waitUntil?: (p: Promise<unknown>) => void;
 }
 
 import { USER_A } from "./ids";
@@ -24,7 +25,7 @@ export function makeApiContext(opts: MakeApiContextOpts = {}): APIContext {
     url: new URL(url),
     locals: {
       user: opts.user === undefined ? DEFAULT_USER : opts.user,
-      cfContext: { waitUntil: vi.fn() },
+      cfContext: { waitUntil: opts.waitUntil ?? vi.fn() },
     },
     cookies: {
       set: vi.fn(),
@@ -38,5 +39,5 @@ export function makeApiContext(opts: MakeApiContextOpts = {}): APIContext {
     site: new URL("http://localhost"),
     generator: "test",
     props: {},
-  } as APIContext;
+  } as unknown as APIContext;
 }

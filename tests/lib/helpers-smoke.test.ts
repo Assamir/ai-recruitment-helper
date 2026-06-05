@@ -10,6 +10,27 @@ describe("tests/helpers smoke", () => {
     expect(ctx.locals.cfContext.waitUntil).toBeDefined();
   });
 
+  it("makeFakeSupabase persists bulk insert(array) and single insert", async () => {
+    const tables = { analysis_questions: [] as Record<string, unknown>[] };
+    const fake = makeFakeSupabase({ actingUserId: USER_A, tables });
+
+    const bulk = await fake.from("analysis_questions").insert([
+      { analysis_id: ANALYSIS_ID, category: "skills", question: "Q1?", rationale: "R1", sort_order: 0 },
+      { analysis_id: ANALYSIS_ID, category: "skills", question: "Q2?", rationale: "R2", sort_order: 1 },
+    ]);
+    const bulkRows = bulk.data as { id: string }[];
+    expect(bulkRows).toHaveLength(2);
+    expect(bulkRows.every((row) => typeof row.id === "string")).toBe(true);
+    expect(tables.analysis_questions).toHaveLength(2);
+
+    const single = await fake
+      .from("analysis_questions")
+      .insert({ analysis_id: ANALYSIS_ID, category: "skills", question: "Q3?", rationale: "R3", sort_order: 2 })
+      .single();
+    expect(single.data?.id).toBeTruthy();
+    expect(tables.analysis_questions).toHaveLength(3);
+  });
+
   it("makeFakeSupabase filters cross-user analyses", async () => {
     const fake = makeFakeSupabase({
       actingUserId: USER_A,
