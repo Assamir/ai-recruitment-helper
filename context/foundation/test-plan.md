@@ -81,7 +81,7 @@ orchestrator updates Status as artifacts appear on disk.
 | 2 | Input integrity (parsing + anonymization) | Garbage CV text is rejected not analyzed; no PII crosses the boundary on real-world formats | #5, #3 | unit (fixture corpus) + integration at boundary | **done** | context/changes/testing-input-integrity-parsing-anonymization/ |
 | 3 | Data isolation & API boundary | Cross-user reads are denied; API routes reject untrusted input | #4, #7 | integration on API routes | **done** | context/changes/testing-data-isolation-api-boundary/ |
 | 4 | Pipeline integration & quality gates | End-to-end orchestration holds with a mocked LLM; lock the floor in CI | #6 + cross-cutting | integration + gates | **done** | context/changes/testing-pipeline-integration-quality-gates/ |
-| 5 | Main-flow E2E (paste path) | Prove the logged-in paste→process→result loop holds end-to-end in a browser with the LLM stubbed at the network edge | #8 | e2e (Playwright/browser, LLM stubbed) | **change opened** | context/changes/testing-main-flow-e2e/ |
+| 5 | Main-flow E2E (paste path) | Prove the logged-in paste→process→result loop holds end-to-end in a browser with the LLM stubbed at the network edge | #8 | e2e (Playwright/browser, LLM stubbed) | **done** | context/changes/testing-main-flow-e2e/ |
 
 ## 4. Stack
 
@@ -93,7 +93,7 @@ The classic test base for this project. AI-native tools (if any) carry a
 | unit + integration | Vitest | 4.1.x | three projects: `node` (`tests/lib/**`), `components` (jsdom), `rls` (`tests/rls/**`, gated by env); `globals:true`, `@`→`src` alias |
 | API / network mocking | `vi.mock("ai")` at LLM edge | 2026-06-04 | `tests/lib/llm/client.test.ts`; grounding uses offline `(CV, JD, response)` JSON under `tests/fixtures/analysis/` |
 | CV fixture corpus | `tests/fixtures/cv/` text corpus (Phase 2) | 2026-06-04 | Synthetic catchable/accepted-miss strings; binary `.pdf`/`.docx` deliberately deferred — extractor edge mocked in parser unit tests |
-| e2e | none yet — optional | — | browser MCP available if a full deployed-shape failure ever needs it; not currently justified |
+| e2e | Playwright (`@playwright/test`) | 1.60.x | Phase 5: `playwright.config.ts` runs a `setup` (auth → `tests/e2e/.auth/user.json`) + `chromium` (storageState) project; `webServer` boots the LLM stub then the app. Real boundaries (auth, routing, Supabase) stay live; only the LLM is stubbed at its network edge |
 | accessibility | none yet — optional | — | out of scope per §7 (UI not a priority surface) |
 | (optional) AI-native | LLM-as-judge for faithfulness — checked: 2026-06-04 | deferred | Phase 1 uses deterministic `findUngroundedClaims` in `tests/lib/analysis/faithfulness.ts`; judge only if this proves too noisy |
 
@@ -147,8 +147,27 @@ relevant rollout phase ships; before that, the sub-section reads
 
 ### 6.3 Adding an e2e test
 
-- TBD — optional; only if a failure requires the full deployed Worker shape.
-  Browser MCP is available (see §4).
+- **When**: only for risks that genuinely need the browser-level wiring (client
+  fetch → progress UI → results render). A handler/integration test (§6.4, §6.9)
+  is cheaper and preferred whenever it gives the same signal.
+- **Location**: `tests/e2e/<flow>.spec.ts`. Config: `playwright.config.ts`.
+  Rules + run instructions: `tests/e2e/E2E_RULES.md`, `tests/e2e/README.md`.
+- **Auth once**: `tests/e2e/auth.setup.ts` signs in through the UI and saves
+  `storageState` to `tests/e2e/.auth/user.json`; specs reuse it via the `setup`
+  project dependency — do not re-login per test. Creds come from `.dev.vars`
+  (`E2E_EMAIL` / `E2E_PASSWORD`).
+- **Stub the LLM at the network edge, never the content**: `tests/e2e/support/llm-stub.mjs`
+  is an OpenAI-compatible server bound to the lmstudio base URL (`localhost:1234`);
+  it returns `tests/e2e/fixtures/analysis-response.json` (the oracle). Keep real
+  auth, routing, and Supabase live. **Never assert exact LLM text** (oracle problem,
+  §1); assert the result *renders* (e.g. "Match Summary", "Completed").
+- **Locators**: role-based + exact matches to dodge hydration races and decoy text
+  (the auth "Show password" toggle, raw JSON dumps). Retry-fill the paste field to
+  beat React island hydration. Use `waitForLoadState`/state waits, not fixed sleeps.
+- **Cleanup**: each spec deletes the analysis row it created in `afterEach`.
+- **Run**: `npm run test:e2e` (or `npm run test:e2e:ui`). Reference: `tests/e2e/main-flow.spec.ts`.
+- **Falsifiability**: a deliberate stub break (malformed JSON → pipeline fails) must
+  turn the spec RED at the results assertion. Confirmed for `main-flow.spec.ts`.
 
 ### 6.4 Adding a test for a new API endpoint
 
@@ -252,6 +271,18 @@ sole pre-commit. Gated `tests/rls/candidates-update.rls.test.ts` characterizes t
 latent `pii_map` UPDATE 0-row bug (fix migration deferred). Observability gate remains
 recommended, not required.
 
+**Phase 5 (2026-06-05):** Risk #8 — driven via `/10x-e2e` as a standalone E2E setup
++ single risk-driven happy-path spec (`tests/e2e/main-flow.spec.ts`) rather than the
+research→plan path, since the deliverable is one browser-level test. `@playwright/test`
++ Chromium installed; `playwright.config.ts` adds a `setup` (auth → storageState) +
+`chromium` project with a `webServer` that boots the LLM stub then the app. LLM stubbed
+at its network edge (`tests/e2e/support/llm-stub.mjs`, OpenAI-compatible, returns the
+fixture oracle); auth/routing/Supabase stay live. `npx playwright test` → 2 passed;
+falsifiability confirmed (malformed-JSON break → RED at "Match Summary", reverted). Fixes
+while verifying: exact-match auth locators (avoid "Show password"), retry-fill for the
+hydration race, exact "Completed" match (avoid a raw JSON dump). **No `plan.md`/`research.md`
+was produced for this phase by design.** Changes are uncommitted at rollout-completion time.
+
 ## 7. What We Deliberately Don't Test
 
 Exclusions agreed during the rollout (Phase 2 interview, Q5). Future
@@ -264,8 +295,8 @@ contributors should respect these unless the underlying assumption changes.
 
 ## 8. Freshness Ledger
 
-- Strategy (§1–§5) last reviewed: 2026-06-05 (Phase 4 cookbook + gates)
-- Stack versions last verified: 2026-06-04
+- Strategy (§1–§5) last reviewed: 2026-06-05 (Phase 5 e2e cookbook + stack row)
+- Stack versions last verified: 2026-06-05 (added Playwright 1.60.x)
 - AI-native tool references last verified: 2026-06-04
 
 Refresh (`/10x-test-plan --refresh`) when:

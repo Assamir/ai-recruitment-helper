@@ -1,6 +1,14 @@
 # build output
 dist/
 
+# playwright / e2e
+tests/e2e/.auth/
+test-results/
+playwright-report/
+blob-report/
+.playwright-cli/
+/playwright/.cache/
+
 # generated types
 .astro/
 

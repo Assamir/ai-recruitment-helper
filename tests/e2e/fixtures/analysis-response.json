@@ -1,0 +1,17 @@
+{
+  "match_summary": "E2E STUB SUMMARY: Strong Java and CI/test-automation background that aligns with the QA role; depth of independent test-strategy ownership is unclear and worth probing.",
+  "questions": [
+    {
+      "category": "missing_elements",
+      "question": "E2E STUB QUESTION: Can you walk through a test strategy you designed end-to-end, not just the tools you used?",
+      "rationale": "The CV lists many tools but does not show ownership of an overall strategy.",
+      "suggested_answer": "Look for end-to-end ownership: risk-based scope, environments, data, and reporting — not a tool tour."
+    },
+    {
+      "category": "vague_claims",
+      "question": "E2E STUB QUESTION: You list 'good knowledge of SQL' — what is the most complex query you have written and why?",
+      "rationale": "Self-rated skills need a concrete example to be credible.",
+      "suggested_answer": null
+    }
+  ]
+}
