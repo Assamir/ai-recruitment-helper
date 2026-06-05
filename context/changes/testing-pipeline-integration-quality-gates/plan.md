@@ -465,26 +465,26 @@ backward-compatible (`wrangler rollback` does not revert schema — AGENTS.md).
 
 #### Automated
 
-- [x] 3.1 Suite passes with RLS test self-skipping in CI: `npm run test`
-- [x] 3.2 Linting + typecheck pass: `npm run lint && npm run typecheck`
+- [x] 3.1 Suite passes with RLS test self-skipping in CI: `npm run test` — c2a73a8
+- [x] 3.2 Linting + typecheck pass: `npm run lint && npm run typecheck` — c2a73a8
 
 #### Manual
 
-- [x] 3.3 With local Supabase env, `npx vitest run --project rls` reports a definitive verdict (permitted vs 0-row)
-- [x] 3.4 Follow-up note in `change.md` records the verdict and deferred fix
+- [x] 3.3 With local Supabase env, `npx vitest run --project rls` reports a definitive verdict (permitted vs 0-row) — c2a73a8
+- [x] 3.4 Follow-up note in `change.md` records the verdict and deferred fix — c2a73a8
 
 ### Phase 4: CI quality gates & reconciliation
 
 #### Automated
 
-- [x] 4.1 `npm run lint` passes
-- [x] 4.2 `npm run typecheck` passes
-- [x] 4.3 `npm run test` passes (pipeline included; RLS self-skips)
-- [x] 4.4 `npm run build` passes
-- [x] 4.5 CI `lint-build` runs the new `npm run typecheck` step (verify in Actions)
+- [x] 4.1 `npm run lint` passes — 1ceca1a
+- [x] 4.2 `npm run typecheck` passes — 1ceca1a
+- [x] 4.3 `npm run test` passes (pipeline included; RLS self-skips) — 1ceca1a
+- [x] 4.4 `npm run build` passes — 1ceca1a
+- [x] 4.5 CI `lint-build` runs the new `npm run typecheck` step (verify in Actions) — 1ceca1a
 
 #### Manual
 
-- [x] 4.6 Fresh clone + `npm install` installs only Lefthook hooks; commit triggers Lefthook, no lint-staged
-- [x] 4.7 `AGENTS.md` and `test-plan.md` §3/§5/§6 match shipped state
+- [x] 4.6 Fresh clone + `npm install` installs only Lefthook hooks; commit triggers Lefthook, no lint-staged — 1ceca1a
+- [x] 4.7 `AGENTS.md` and `test-plan.md` §3/§5/§6 match shipped state — 1ceca1a
 - [ ] 4.8 PR CI shows a distinct, named typecheck step

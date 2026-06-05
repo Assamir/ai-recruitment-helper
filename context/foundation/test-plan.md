@@ -6,7 +6,7 @@
 >
 > Refresh: re-run `/10x-test-plan --refresh` when stale (see §8).
 >
-> Last updated: 2026-06-04 (Phase 3 shipped)
+> Last updated: 2026-06-05 (Phase 4 shipped)
 
 ## 1. Strategy
 
@@ -78,7 +78,7 @@ orchestrator updates Status as artifacts appear on disk.
 | 1 | Output grounding & response integrity | Prove generated content references only real CV/JD input, and malformed LLM responses never render as a silent "no findings" | #1, #2 | integration (fixture-driven) + unit | **done** | context/changes/testing-output-grounding-response-integrity/ |
 | 2 | Input integrity (parsing + anonymization) | Garbage CV text is rejected not analyzed; no PII crosses the boundary on real-world formats | #5, #3 | unit (fixture corpus) + integration at boundary | **done** | context/changes/testing-input-integrity-parsing-anonymization/ |
 | 3 | Data isolation & API boundary | Cross-user reads are denied; API routes reject untrusted input | #4, #7 | integration on API routes | **done** | context/changes/testing-data-isolation-api-boundary/ |
-| 4 | Pipeline integration & quality gates | End-to-end orchestration holds with a mocked LLM; lock the floor in CI | #6 + cross-cutting | integration + gates | not started | — |
+| 4 | Pipeline integration & quality gates | End-to-end orchestration holds with a mocked LLM; lock the floor in CI | #6 + cross-cutting | integration + gates | **done** | context/changes/testing-pipeline-integration-quality-gates/ |
 
 ## 4. Stack
 
@@ -112,10 +112,10 @@ lands; before that, the gate is `planned`.
 
 | Gate | Where | Required? | Catches |
 |---|---|---|---|
-| lint + typecheck | local + CI | required (already wired) | syntactic / type drift |
+| lint + typecheck | local + CI (`lint-build`: lint → typecheck → test → build) | required | syntactic / type drift |
 | unit + integration | local + CI | required after §3 Phase 1 | grounding + parse + logic regressions |
 | API / boundary integration | local + CI (`npm run test`) | **required** (Phase 3) | data-isolation + input-validation regressions; real-RLS lane gated (`npx vitest run --project rls`) |
-| pipeline integration (mocked LLM) | CI on PR | required after §3 Phase 4 | broken cross-layer orchestration |
+| pipeline integration (mocked LLM) | CI on PR (`npm run test`) | **required** (Phase 4) | broken cross-layer orchestration |
 | analysis-latency / error observability | Cloudflare Workers logs/metrics | recommended after §3 Phase 4 | the ~60s budget + silent failures (not a unit test) |
 | pre-prod smoke | between merge + prod | optional | environment-specific (workerd) failures |
 
@@ -153,7 +153,8 @@ relevant rollout phase ships; before that, the sub-section reads
   `tests/helpers/api-context.ts` (`makeApiContext`); mock `@/lib/supabase` to return
   `makeFakeSupabase` from `tests/helpers/fake-supabase.ts`. The fake **filters rows by
   `actingUserId`** — it models the handler contract ("zero owned rows → 404"), **not**
-  real Postgres RLS. Mock `@/lib/llm` for `POST /api/analysis`; stub `locals.cfContext.waitUntil`.
+  real Postgres RLS. For isolation/input tests, mock `@/lib/llm` and leave `waitUntil`
+  as the default no-op. For pipeline integration (Risk #6), see §6.9.
 - **404, never 403:** cross-user reads assert `status === 404` and `code === "NOT_FOUND"`
   (existence-hiding contract in `src/pages/api/analysis/[id]/index.ts`).
 - **Real RLS (gated):** `tests/rls/*.test.ts` in the Vitest `rls` project — source of truth
@@ -205,6 +206,23 @@ relevant rollout phase ships; before that, the sub-section reads
 - Optional: route the same prompt through `completeLLM` with `vi.mock("ai")` for call-site
   fidelity (`tests/lib/llm/client.test.ts` pattern).
 
+### 6.9 Pipeline integration (Risk #6)
+
+- **Location**: `tests/lib/api/analysis-pipeline-integration.test.ts`.
+- **Pattern**: hoist `vi.mock("ai")` + provider factories (same topology as
+  `tests/lib/llm/client.test.ts`); also mock `astro:env/server` so real
+  `getLLMConfig`/`createLLMModel` run; swap `@/lib/supabase` via `createClientImpl`
+  closure with `makeFakeSupabase` (bulk `insert(array)` must persist questions).
+- **`waitUntil` capture**: pass `waitUntil: (p) => { captured = p }` to
+  `makeApiContext`; `await captured` after the handler returns `201` before asserting
+  on `analyses.status` / `analysis_questions` — the background IIFE is fire-and-forget.
+- **Assertions**: observable contract only — `status`, `match_summary`, `error_message`,
+  persisted questions; do not assert LLM-internal `.code` taxonomy (route discards it).
+- **Fixtures**: `tests/fixtures/analysis/grounded.json` for `mockGenerateText` payload
+  and `job_profiles` seed; use `cv_text` paste branch to avoid binary fixtures.
+- **Falsifiability**: reverting `waitUntil` to a no-op or removing the `ai` edge mock
+  must break the happy-path assertions.
+
 ### 6.6 Per-rollout-phase notes
 
 **Phase 1 (2026-06-04):** Risk #2 was a pure `CATEGORY_LABELS` vocabulary bug in
@@ -223,6 +241,14 @@ Risk #7 — server file-size cap (`MAX_CV_FILE_BYTES`), UUID guards, auth `formD
 try/catch. **Accepted follow-ups:** magic-byte verification, Zod request schemas, SSR
 foreign-id paths, `candidates` UPDATE RLS (Phase 4).
 
+**Phase 4 (2026-06-05):** Risk #6 — `analysis-pipeline-integration.test.ts` captures
+`waitUntil`, mocks LLM at the `ai` network edge + `astro:env/server`, asserts
+`completed`/`failed` observable contract. CI `lint-build` adds explicit `typecheck`;
+pipeline test auto-runs via `npm run test`. Husky/lint-staged removed; Lefthook is
+sole pre-commit. Gated `tests/rls/candidates-update.rls.test.ts` characterizes the
+latent `pii_map` UPDATE 0-row bug (fix migration deferred). Observability gate remains
+recommended, not required.
+
 ## 7. What We Deliberately Don't Test
 
 Exclusions agreed during the rollout (Phase 2 interview, Q5). Future
@@ -235,7 +261,7 @@ contributors should respect these unless the underlying assumption changes.
 
 ## 8. Freshness Ledger
 
-- Strategy (§1–§5) last reviewed: 2026-06-04 (Phase 3 cookbook + status)
+- Strategy (§1–§5) last reviewed: 2026-06-05 (Phase 4 cookbook + gates)
 - Stack versions last verified: 2026-06-04
 - AI-native tool references last verified: 2026-06-04
 

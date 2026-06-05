@@ -82,7 +82,7 @@ function makeContext(formData: FormData) {
     site: new URL("http://localhost"),
     generator: "test",
     props: {},
-  } as Parameters<typeof POST>[0];
+  } as unknown as Parameters<typeof POST>[0];
 }
 
 describe("POST /api/analysis — retry with garbage cv_text (manual 1.7)", () => {

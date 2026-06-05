@@ -6,7 +6,7 @@ AI Recruitment Helper is a web application for QA recruitment built with Astro 6
 
 - Never write to `context/archive/`. Archived changes are immutable.
 - Never commit `.env` files. Copy `@.env.example` and populate `SUPABASE_URL`, `SUPABASE_KEY`, and LLM vars locally.
-- All changes must pass lint and build before merging — CI enforces both on push/PR to `master`.
+- All changes must pass lint, typecheck, test, and build before merging — CI enforces all on push/PR to `master`.
 - Node version: 22.14.0 (pinned in `@.nvmrc`). CI injects `SUPABASE_URL` and `SUPABASE_KEY` from GitHub secrets.
 
 ## Deployment
@@ -38,6 +38,7 @@ Single-package Astro app. Source lives in `src/` with `components/{auth,ui}/`, `
 - `npm run build` — production build (requires `SUPABASE_URL` and `SUPABASE_KEY` env vars)
 - `npm run lint` — ESLint check
 - `npm run lint:fix` — auto-fix lint issues
+- `npm run typecheck` — Astro/TypeScript type check (`astro sync && astro check`)
 - `npm run format` — Prettier formatting
 - `npm run deploy` — build and deploy to Cloudflare Workers production
 - `npm run rollback` — revert to the previous Worker version
@@ -60,10 +61,10 @@ The viability test endpoint at `POST /api/llm/health` sends a synthetic CV throu
 
 ## Coding Style & Naming Conventions
 
-Lint and format rules live in `@eslint.config.js` and `@.prettierrc.json`. Husky pre-commit hook runs lint-staged: ESLint fix on `*.{ts,tsx,astro}`, Prettier on `*.{json,css,md}`.
+Lint and format rules live in `@eslint.config.js` and `@.prettierrc.json`. Lefthook pre-commit (`lefthook.yml`) runs ESLint on staged `*.{ts,tsx,astro}`, `npm run typecheck` when src/tests change, and scoped Vitest via `scripts/lefthook-related-tests.mjs`.
 
 Components use PascalCase filenames (`LoginForm.tsx`). Pages and API routes follow Astro file-based routing in `src/pages/`.
 
 ## Commit & Pull Request Guidelines
 
-Commit messages use imperative mood with an action-verb prefix: `Add ...`, `Update ...`, `Fix ...`, `Bootstrap ...`. CI runs on push and pull requests targeting `master` — the pipeline installs dependencies, runs `astro sync`, then lint and build. On push to `master`, a deploy job runs `wrangler deploy` to production. On PRs, a preview job runs `wrangler versions upload` to create a preview URL. See `@.github/workflows/ci.yml`.
+Commit messages use imperative mood with an action-verb prefix: `Add ...`, `Update ...`, `Fix ...`, `Bootstrap ...`. CI runs on push and pull requests targeting `master` — the pipeline installs dependencies, runs `astro sync`, then `lint → typecheck → test → build`. On push to `master`, a deploy job runs `wrangler deploy` to production. On PRs, a preview job runs `wrangler versions upload` to create a preview URL. See `@.github/workflows/ci.yml`.

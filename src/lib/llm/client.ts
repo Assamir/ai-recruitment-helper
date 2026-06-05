@@ -112,13 +112,14 @@ export async function completeLLM<T extends z.ZodType>(
       parse_ms: Math.round(parseEnd - llmEnd),
     };
 
+    const modelMeta = model as { provider?: string; modelId?: string };
     // eslint-disable-next-line no-console
     console.log(
       JSON.stringify({
         event: "llm_completion",
         status: "ok",
-        provider: String(model.provider),
-        modelId: String(model.modelId),
+        provider: modelMeta.provider ?? "unknown",
+        modelId: modelMeta.modelId ?? "unknown",
         timing,
       }),
     );
