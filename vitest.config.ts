@@ -34,6 +34,7 @@ export default defineConfig({
           name: "rls",
           environment: "node",
           include: ["tests/rls/**/*.test.ts"],
+          setupFiles: ["tests/rls/setup.ts"],
         },
       },
     ],

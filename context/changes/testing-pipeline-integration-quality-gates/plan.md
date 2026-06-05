@@ -440,26 +440,26 @@ backward-compatible (`wrangler rollback` does not revert schema — AGENTS.md).
 
 #### Automated
 
-- [x] 1.1 Linting passes: `npm run lint`
-- [x] 1.2 Type checking passes: `npm run typecheck`
-- [x] 1.3 Full suite passes with no regressions: `npm run test`
+- [x] 1.1 Linting passes: `npm run lint` — a550e89
+- [x] 1.2 Type checking passes: `npm run typecheck` — a550e89
+- [x] 1.3 Full suite passes with no regressions: `npm run test` — a550e89
 
 #### Manual
 
-- [x] 1.4 Scratch assertion confirms bulk `insert(array)` returns all rows and `.single()` insert still returns one row with an `id`
+- [x] 1.4 Scratch assertion confirms bulk `insert(array)` returns all rows and `.single()` insert still returns one row with an `id` — a550e89
 
 ### Phase 2: Pipeline integration test (Risk #6)
 
 #### Automated
 
-- [x] 2.1 New pipeline test passes: `npm run test`
-- [x] 2.2 Linting passes: `npm run lint`
-- [x] 2.3 Type checking passes: `npm run typecheck`
+- [x] 2.1 New pipeline test passes: `npm run test` — 8985e1e
+- [x] 2.2 Linting passes: `npm run lint` — 8985e1e
+- [x] 2.3 Type checking passes: `npm run typecheck` — 8985e1e
 
 #### Manual
 
-- [x] 2.4 Reverting `waitUntil` to a no-op fails the happy-path assertions (observes real chain)
-- [x] 2.5 Removing the `vi.mock("ai")` edge breaks the test (network edge is the controlled seam)
+- [x] 2.4 Reverting `waitUntil` to a no-op fails the happy-path assertions (observes real chain) — 8985e1e
+- [x] 2.5 Removing the `vi.mock("ai")` edge breaks the test (network edge is the controlled seam) — 8985e1e
 
 ### Phase 3: candidates UPDATE RLS characterization
 
