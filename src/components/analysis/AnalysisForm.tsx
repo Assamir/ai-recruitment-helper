@@ -3,6 +3,10 @@ import { User } from "lucide-react";
 import { FileUpload } from "./FileUpload";
 import { ProfileSelector } from "./ProfileSelector";
 import { FormField } from "@/components/auth/FormField";
+import { MAX_CUSTOM_REQUIREMENTS_CHARS, MAX_PROJECT_CONTEXT_CHARS } from "@/lib/analysis/limits";
+
+const TEXTAREA_CLASS =
+  "w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder-white/30 backdrop-blur-md focus:border-blue-400/50 focus:ring-1 focus:ring-blue-400/30 focus:outline-none";
 
 interface Profile {
   id: string;
@@ -19,6 +23,10 @@ export default function AnalysisForm({ profiles }: AnalysisFormProps) {
   const [file, setFile] = useState<File | null>(null);
   const [cvText, setCvText] = useState("");
   const [profileId, setProfileId] = useState<string | null>(null);
+  const [customRequirements, setCustomRequirements] = useState("");
+  const [projectContext, setProjectContext] = useState("");
+  const [customRequirementsOpen, setCustomRequirementsOpen] = useState(false);
+  const [projectContextOpen, setProjectContextOpen] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [loading, setLoading] = useState(false);
@@ -28,12 +36,23 @@ export default function AnalysisForm({ profiles }: AnalysisFormProps) {
     e.preventDefault();
     setError(null);
 
-    if (!profileId) {
-      setError("Please select a job profile.");
+    const trimmedCustom = customRequirements.trim();
+
+    if (!profileId && !trimmedCustom) {
+      setError("Please select a job profile or enter custom job requirements.");
       return;
     }
     if (!file && !cvText.trim()) {
       setError("Please upload a CV file or paste CV text.");
+      return;
+    }
+    if (trimmedCustom.length > MAX_CUSTOM_REQUIREMENTS_CHARS) {
+      setError(`Custom job requirements exceed the ${MAX_CUSTOM_REQUIREMENTS_CHARS.toLocaleString()} character limit.`);
+      return;
+    }
+    const trimmedContext = projectContext.trim();
+    if (trimmedContext.length > MAX_PROJECT_CONTEXT_CHARS) {
+      setError(`Project context exceeds the ${MAX_PROJECT_CONTEXT_CHARS.toLocaleString()} character limit.`);
       return;
     }
 
@@ -41,7 +60,9 @@ export default function AnalysisForm({ profiles }: AnalysisFormProps) {
 
     try {
       const body = new FormData();
-      body.append("job_profile_id", profileId);
+      if (profileId) body.append("job_profile_id", profileId);
+      if (trimmedCustom) body.append("custom_requirements", trimmedCustom);
+      if (trimmedContext) body.append("project_context", trimmedContext);
       if (firstName.trim()) body.append("first_name", firstName.trim());
       if (lastName.trim()) body.append("last_name", lastName.trim());
       if (file) {
@@ -97,6 +118,57 @@ export default function AnalysisForm({ profiles }: AnalysisFormProps) {
       </div>
 
       <ProfileSelector profiles={profiles} selectedId={profileId} onChange={setProfileId} />
+
+      <div className="space-y-3">
+        <label className="block text-sm font-medium text-blue-100/80">Custom Job Requirements</label>
+        <button
+          type="button"
+          onClick={() => {
+            setCustomRequirementsOpen((o) => !o);
+          }}
+          className="text-xs text-blue-100/50 transition-colors hover:text-blue-100/80"
+        >
+          {customRequirementsOpen ? "▲ Hide" : "▼ Add custom job requirements"}
+        </button>
+        {customRequirementsOpen && (
+          <textarea
+            rows={6}
+            placeholder="Describe the role requirements, must-have skills, seniority, certifications…"
+            value={customRequirements}
+            onChange={(e) => {
+              setCustomRequirements(e.target.value);
+            }}
+            className={TEXTAREA_CLASS}
+          />
+        )}
+        <p className="text-xs text-blue-100/40">
+          Use instead of or alongside a profile. At least one of profile or custom requirements is required.
+        </p>
+      </div>
+
+      <div className="space-y-3">
+        <label className="block text-sm font-medium text-blue-100/80">Project Context (optional)</label>
+        <button
+          type="button"
+          onClick={() => {
+            setProjectContextOpen((o) => !o);
+          }}
+          className="text-xs text-blue-100/50 transition-colors hover:text-blue-100/80"
+        >
+          {projectContextOpen ? "▲ Hide" : "▼ Add project context"}
+        </button>
+        {projectContextOpen && (
+          <textarea
+            rows={4}
+            placeholder="Domain, methodology, tech stack, team structure…"
+            value={projectContext}
+            onChange={(e) => {
+              setProjectContext(e.target.value);
+            }}
+            className={TEXTAREA_CLASS}
+          />
+        )}
+      </div>
 
       {error && (
         <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">{error}</div>
