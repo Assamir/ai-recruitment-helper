@@ -23,8 +23,7 @@ import type { TablesUpdate } from "@/db/database.types";
 const LINKEDIN_UNAVAILABLE_NOTE = "LinkedIn could not be fetched — paste profile text to include it in the analysis.";
 const LINKEDIN_SESSION_EXPIRED_NOTE =
   "LinkedIn session expired — re-authenticate and refresh the LINKEDIN_SESSION_COOKIE secret, then retry. Profile text was not cross-referenced.";
-const LINKEDIN_NOT_FOUND_NOTE =
-  "LinkedIn profile not found — check the URL. Analysis used the CV only.";
+const LINKEDIN_NOT_FOUND_NOTE = "LinkedIn profile not found — check the URL. Analysis used the CV only.";
 
 export const POST: APIRoute = async (context) => {
   if (!context.locals.user) {

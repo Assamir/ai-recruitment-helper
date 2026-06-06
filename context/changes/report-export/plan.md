@@ -254,16 +254,16 @@ None — no schema changes. Existing CV-only analyses carry `pii_map`; LinkedIn-
 
 #### Automated
 
-- [x] 1.1 Type checking passes: `npm run typecheck`
-- [x] 1.2 Linting passes: `npm run lint`
-- [x] 1.3 Redaction unit tests pass (LinkedIn leak case, CV-only placeholder pass-through, longest-match-first ordering)
-- [x] 1.4 Markdown snapshot test passes (frozen timestamp, four categories, redaction applied)
-- [x] 1.5 All unit tests pass: `npm run test`
+- [x] 1.1 Type checking passes: `npm run typecheck` — 06eaa70
+- [x] 1.2 Linting passes: `npm run lint` — 06eaa70
+- [x] 1.3 Redaction unit tests pass (LinkedIn leak case, CV-only placeholder pass-through, longest-match-first ordering) — 06eaa70
+- [x] 1.4 Markdown snapshot test passes (frozen timestamp, four categories, redaction applied) — 06eaa70
+- [x] 1.5 All unit tests pass: `npm run test` — 06eaa70
 
 #### Manual
 
-- [x] 1.6 Rendered Markdown reads cleanly with prominent confidentiality header
-- [x] 1.7 Printable HTML is legible and prints to a clean PDF
+- [x] 1.6 Rendered Markdown reads cleanly with prominent confidentiality header — 06eaa70
+- [x] 1.7 Printable HTML is legible and prints to a clean PDF — 06eaa70
 
 ### Phase 2: Export API route
 
