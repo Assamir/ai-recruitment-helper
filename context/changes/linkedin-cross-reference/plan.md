@@ -411,10 +411,10 @@ new column must be additive/backward-compatible per the deploy rules in `AGENTS.
 ### Phase 1: Text-paste cross-reference core
 
 #### Automated
-- [ ] 1.1 Unit tests pass: `npm run test`
-- [ ] 1.2 Type checking passes: `npm run typecheck`
-- [ ] 1.3 Linting passes: `npm run lint`
-- [ ] 1.4 Build passes: `npm run build`
+- [x] 1.1 Unit tests pass: `npm run test`
+- [x] 1.2 Type checking passes: `npm run typecheck`
+- [x] 1.3 Linting passes: `npm run lint`
+- [x] 1.4 Build passes: `npm run build`
 
 #### Manual
 - [ ] 1.5 Contradicting LinkedIn text yields a contradictions question referencing the mismatch
@@ -424,10 +424,10 @@ new column must be additive/backward-compatible per the deploy rules in `AGENTS.
 ### Phase 2: Link scraping via Browser Run + Playwright
 
 #### Automated
-- [ ] 2.1 Unit tests pass: `npm run test`
-- [ ] 2.2 Type checking passes: `npm run typecheck`
-- [ ] 2.3 Linting passes: `npm run lint`
-- [ ] 2.4 Build passes (with `@cloudflare/playwright` + browser binding): `npm run build`
+- [x] 2.1 Unit tests pass: `npm run test`
+- [x] 2.2 Type checking passes: `npm run typecheck`
+- [x] 2.3 Linting passes: `npm run lint`
+- [x] 2.4 Build passes (with `@cloudflare/playwright` + browser binding): `npm run build`
 
 #### Manual
 - [ ] 2.5 Valid URL + seeded session scrapes profile text into the prompt (`wrangler dev --remote`)
@@ -437,10 +437,10 @@ new column must be additive/backward-compatible per the deploy rules in `AGENTS.
 ### Phase 3: Results surfacing + retry coherence
 
 #### Automated
-- [ ] 3.1 Unit tests pass: `npm run test`
-- [ ] 3.2 Type checking passes: `npm run typecheck`
-- [ ] 3.3 Linting passes: `npm run lint`
-- [ ] 3.4 Build passes: `npm run build`
+- [x] 3.1 Unit tests pass: `npm run test`
+- [x] 3.2 Type checking passes: `npm run typecheck`
+- [x] 3.3 Linting passes: `npm run lint`
+- [x] 3.4 Build passes: `npm run build`
 
 #### Manual
 - [ ] 3.5 Results header shows "LinkedIn cross-referenced" badge when used

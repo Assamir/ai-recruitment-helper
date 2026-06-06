@@ -17,13 +17,14 @@ interface ResultData {
     status: string;
     match_summary: string | null;
     error_message: string | null;
+    linkedin_scrape_note: string | null;
     created_at: string;
     completed_at: string | null;
     custom_requirements: string | null;
     project_context: string | null;
   };
   questions: Question[];
-  candidate: { id: string; file_name: string | null };
+  candidate: { id: string; file_name: string | null; has_linkedin?: boolean };
   profile: { id: string; name: string; seniority_level?: string | null; description?: string | null } | null;
 }
 
@@ -156,6 +157,8 @@ export default function AnalysisView({ analysisId, initialStatus }: AnalysisView
       projectContext={results.analysis.project_context}
       fileName={results.candidate.file_name}
       createdAt={results.analysis.created_at}
+      hasLinkedin={results.candidate.has_linkedin ?? false}
+      linkedinScrapeNote={results.analysis.linkedin_scrape_note}
     />
   );
 }

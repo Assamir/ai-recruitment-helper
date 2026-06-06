@@ -33,6 +33,7 @@ export default defineConfig({
       OPENROUTER_API_KEY: envField.string({ context: "server", access: "secret", optional: true }),
       LLM_PROVIDER: envField.string({ context: "server", access: "secret", optional: true }),
       LLM_MODEL: envField.string({ context: "server", access: "secret", optional: true }),
+      LINKEDIN_SESSION_COOKIE: envField.string({ context: "server", access: "secret", optional: true }),
     },
   },
 });

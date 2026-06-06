@@ -41,6 +41,7 @@ vi.mock("astro:env/server", () => ({
   LLM_PROVIDER: "lmstudio",
   LLM_MODEL: "test-model",
   OPENROUTER_API_KEY: undefined,
+  LINKEDIN_SESSION_COOKIE: undefined,
 }));
 
 const USABLE_CV = `

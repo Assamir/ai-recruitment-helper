@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { LINKEDIN_SESSION_COOKIE } from "astro:env/server";
 import { createClient } from "@/lib/supabase";
 import { jsonResponse } from "@/lib/api/response";
 import { isUuid } from "@/lib/api/uuid";
@@ -7,10 +8,18 @@ import { assertUsableCvText } from "@/lib/cv-parser/quality";
 import { anonymizeCV } from "@/lib/anonymizer/index";
 import { getLLMConfig, createLLMModel, completeLLM } from "@/lib/llm";
 import { AnalysisResponseSchema } from "@/lib/analysis/schema";
-import { QA_ANALYSIS_SYSTEM_PROMPT, buildAnalysisPrompt } from "@/lib/analysis/prompt";
-import { MAX_CUSTOM_REQUIREMENTS_CHARS, MAX_PROJECT_CONTEXT_CHARS } from "@/lib/analysis/limits";
+import { getAnalysisSystemPrompt, buildAnalysisPrompt } from "@/lib/analysis/prompt";
+import {
+  MAX_CUSTOM_REQUIREMENTS_CHARS,
+  MAX_PROJECT_CONTEXT_CHARS,
+  MAX_LINKEDIN_TEXT_CHARS,
+} from "@/lib/analysis/limits";
 import { splitFullName, extractCandidateName } from "@/lib/candidate/name";
+import { getWorkerBindings } from "@/lib/cloudflare/env";
+import { isLinkedinProfileUrl } from "@/lib/linkedin/url";
 import type { TablesUpdate } from "@/db/database.types";
+
+const LINKEDIN_UNAVAILABLE_NOTE = "LinkedIn could not be fetched — paste profile text to include it in the analysis.";
 
 export const POST: APIRoute = async (context) => {
   if (!context.locals.user) {
@@ -35,6 +44,8 @@ export const POST: APIRoute = async (context) => {
   const jobProfileIdField = formData.get("job_profile_id");
   const customRequirementsField = formData.get("custom_requirements");
   const projectContextField = formData.get("project_context");
+  const linkedinTextField = formData.get("linkedin_text");
+  const linkedinUrlField = formData.get("linkedin_url");
   const candidateIdField = formData.get("candidate_id");
   const firstNameField = formData.get("first_name");
   const lastNameField = formData.get("last_name");
@@ -57,6 +68,12 @@ export const POST: APIRoute = async (context) => {
     typeof projectContextField === "string" && projectContextField.trim().length > 0
       ? projectContextField.trim()
       : null;
+
+  const linkedinText =
+    typeof linkedinTextField === "string" && linkedinTextField.trim().length > 0 ? linkedinTextField.trim() : null;
+
+  const linkedinUrl =
+    typeof linkedinUrlField === "string" && linkedinUrlField.trim().length > 0 ? linkedinUrlField.trim() : null;
 
   if (!jobProfileId && !customRequirements) {
     return jsonResponse({ error: "Provide a job profile or custom job requirements", code: "BAD_REQUEST" }, 400);
@@ -82,9 +99,24 @@ export const POST: APIRoute = async (context) => {
     );
   }
 
+  if (linkedinText && linkedinText.length > MAX_LINKEDIN_TEXT_CHARS) {
+    return jsonResponse(
+      {
+        error: `LinkedIn text exceeds the ${MAX_LINKEDIN_TEXT_CHARS.toLocaleString()} character limit`,
+        code: "BAD_REQUEST",
+      },
+      400,
+    );
+  }
+
+  if (linkedinUrl && !isLinkedinProfileUrl(linkedinUrl)) {
+    return jsonResponse({ error: "Invalid LinkedIn profile URL", code: "BAD_REQUEST" }, 400);
+  }
+
   // ── CV text extraction (synchronous front-half) ──────────────────────────
   let cvText: string;
   let fileName: string | null = null;
+  let storedLinkedinText: string | null = linkedinText;
   let candidateId: string | null = typeof candidateIdField === "string" ? candidateIdField : null;
 
   if (candidateId && !isUuid(candidateId)) {
@@ -95,7 +127,7 @@ export const POST: APIRoute = async (context) => {
     // Retry path: read stored CV text from existing candidate record
     const { data: candidate, error } = await supabase
       .from("candidates")
-      .select("cv_text, file_name")
+      .select("cv_text, file_name, linkedin_text")
       .eq("id", candidateId)
       .eq("user_id", userId)
       .single();
@@ -109,6 +141,7 @@ export const POST: APIRoute = async (context) => {
     }
     cvText = storedText;
     fileName = candidate.file_name;
+    storedLinkedinText = candidate.linkedin_text;
   } else if (file instanceof File) {
     try {
       cvText = await extractText(file);
@@ -162,6 +195,7 @@ export const POST: APIRoute = async (context) => {
         file_name: fileName,
         first_name: resolvedFirst,
         last_name: resolvedLast,
+        linkedin_text: storedLinkedinText,
       })
       .select("id")
       .single();
@@ -204,10 +238,14 @@ export const POST: APIRoute = async (context) => {
 
   // ── Background pipeline via waitUntil ────────────────────────────────────
   const capturedCvText = cvText;
+  const capturedLinkedinText = storedLinkedinText;
+  const capturedLinkedinUrl = candidateIdField ? null : linkedinUrl;
   const capturedJobProfileId = jobProfileId;
   const capturedCustomRequirements = customRequirements;
   const capturedProjectContext = projectContext;
   const cfCtx = context.locals.cfContext;
+  const workerBindings = await getWorkerBindings();
+  const linkedinSessionCookie = workerBindings?.LINKEDIN_SESSION_COOKIE ?? LINKEDIN_SESSION_COOKIE ?? undefined;
 
   // Without waitUntil the background pipeline can't run; don't leave the row
   // stuck on "parsing" — mark it failed synchronously and report 503.
@@ -230,21 +268,64 @@ export const POST: APIRoute = async (context) => {
       };
 
       try {
-        // Stage: anonymizing
+        let resolvedLinkedinText = capturedLinkedinText;
+        let linkedinScrapeNote: string | null = null;
+
         await setStatus({ status: "anonymizing" });
 
-        const { anonymizedText, piiMap } = anonymizeCV(capturedCvText);
+        if (!resolvedLinkedinText && capturedLinkedinUrl) {
+          const browser = workerBindings?.BROWSER;
 
-        // Persist pii_map for the owning candidate (UPDATE authorized by the
-        // "Users update own candidates" RLS policy).
-        const { error: piiError } = await supabase.from("candidates").update({ pii_map: piiMap }).eq("id", candidateId);
-        if (piiError) {
-          // eslint-disable-next-line no-console -- best-effort PII persistence failure signal
-          console.error(`pii_map write failed for analysis ${analysisId}: ${piiError.message}`);
+          if (browser && linkedinSessionCookie) {
+            try {
+              const { scrapeLinkedinProfile } = await import("@/lib/linkedin/scrape");
+              const scraped = await scrapeLinkedinProfile({
+                browser,
+                url: capturedLinkedinUrl,
+                sessionCookie: linkedinSessionCookie,
+              });
+              resolvedLinkedinText = scraped.text;
+
+              const { error: linkedinPersistError } = await supabase
+                .from("candidates")
+                .update({ linkedin_text: resolvedLinkedinText })
+                .eq("id", candidateId);
+              if (linkedinPersistError) {
+                // eslint-disable-next-line no-console -- best-effort LinkedIn persistence failure signal
+                console.error(`linkedin_text write failed for analysis ${analysisId}: ${linkedinPersistError.message}`);
+              }
+            } catch (err) {
+              const message = err instanceof Error ? err.message : "LinkedIn scrape failed";
+              // eslint-disable-next-line no-console -- non-fatal scrape failure signal
+              console.error(`LinkedIn scrape failed for analysis ${analysisId}: ${message}`);
+              linkedinScrapeNote = LINKEDIN_UNAVAILABLE_NOTE;
+            }
+          } else {
+            linkedinScrapeNote = LINKEDIN_UNAVAILABLE_NOTE;
+          }
+        }
+
+        const hasLinkedin = Boolean(resolvedLinkedinText?.trim());
+        let cvForPrompt: string;
+
+        if (hasLinkedin) {
+          cvForPrompt = capturedCvText;
+        } else {
+          const { anonymizedText, piiMap } = anonymizeCV(capturedCvText);
+          cvForPrompt = anonymizedText;
+
+          const { error: piiError } = await supabase
+            .from("candidates")
+            .update({ pii_map: piiMap })
+            .eq("id", candidateId);
+          if (piiError) {
+            // eslint-disable-next-line no-console -- best-effort PII persistence failure signal
+            console.error(`pii_map write failed for analysis ${analysisId}: ${piiError.message}`);
+          }
         }
 
         // Stage: analyzing
-        await setStatus({ status: "analyzing" });
+        await setStatus({ status: "analyzing", linkedin_scrape_note: linkedinScrapeNote });
 
         let profile: { name: string; description: string; expected_skills: unknown } | null = null;
 
@@ -260,17 +341,18 @@ export const POST: APIRoute = async (context) => {
         }
 
         const userPrompt = buildAnalysisPrompt({
-          anonymizedText,
+          anonymizedText: cvForPrompt,
           profile,
           customRequirements: capturedCustomRequirements,
           projectContext: capturedProjectContext,
+          linkedinText: resolvedLinkedinText,
         });
 
         const { data: llmResult } = await completeLLM({
           model: llmModel,
           schema: AnalysisResponseSchema,
           prompt: userPrompt,
-          systemPrompt: QA_ANALYSIS_SYSTEM_PROMPT,
+          systemPrompt: getAnalysisSystemPrompt({ hasLinkedin }),
         });
 
         // Stage: completed — write questions then flip status
@@ -293,6 +375,7 @@ export const POST: APIRoute = async (context) => {
           match_summary: llmResult.match_summary,
           raw_response: JSON.stringify(llmResult),
           completed_at: new Date().toISOString(),
+          linkedin_scrape_note: linkedinScrapeNote,
         });
       } catch (err) {
         const message = err instanceof Error ? err.message : "Unexpected pipeline error";

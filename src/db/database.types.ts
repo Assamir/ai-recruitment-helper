@@ -18,6 +18,7 @@ export interface Database {
           error_message: string | null;
           id: string;
           job_profile_id: string | null;
+          linkedin_scrape_note: string | null;
           match_summary: string | null;
           project_context: string | null;
           raw_response: string | null;
@@ -32,6 +33,7 @@ export interface Database {
           error_message?: string | null;
           id?: string;
           job_profile_id?: string | null;
+          linkedin_scrape_note?: string | null;
           match_summary?: string | null;
           project_context?: string | null;
           raw_response?: string | null;
@@ -46,6 +48,7 @@ export interface Database {
           error_message?: string | null;
           id?: string;
           job_profile_id?: string | null;
+          linkedin_scrape_note?: string | null;
           match_summary?: string | null;
           project_context?: string | null;
           raw_response?: string | null;

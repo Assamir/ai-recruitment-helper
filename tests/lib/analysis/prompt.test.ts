@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { QA_ANALYSIS_SYSTEM_PROMPT, buildAnalysisPrompt } from "@/lib/analysis/prompt";
+import { QA_ANALYSIS_SYSTEM_PROMPT, buildAnalysisPrompt, getAnalysisSystemPrompt } from "@/lib/analysis/prompt";
 
 const PROFILE = {
   name: "Automation QA — Playwright",
@@ -21,6 +21,9 @@ QA Lead | [COMPANY_1] | January 2022 - Present
 
 const CUSTOM_REQUIREMENTS = "Must have 3+ years Playwright experience and API testing with REST Assured.";
 const PROJECT_CONTEXT = "Fintech payments platform, agile squads, stack: React, Node.js, PostgreSQL.";
+const LINKEDIN_TEXT = `Jane Smith
+Senior QA Engineer at Acme Corp (2020 - Present)
+Previously QA Analyst at Beta Ltd (2018 - 2020)`;
 
 function buildPrompt(overrides: Partial<Parameters<typeof buildAnalysisPrompt>[0]> = {}) {
   return buildAnalysisPrompt({
@@ -163,5 +166,49 @@ describe("buildAnalysisPrompt", () => {
     expect(cvIndex).toBeGreaterThan(projectIndex);
     expect(cvIndex).toBeGreaterThan(profileIndex);
     expect(prompt.slice(cvIndex)).toContain(ANONYMIZED_CV);
+  });
+
+  it("includes LINKEDIN section only when linkedinText is provided", () => {
+    const without = buildPrompt();
+    const withLinkedin = buildPrompt({ linkedinText: LINKEDIN_TEXT });
+
+    expect(without).not.toContain("LINKEDIN:");
+    expect(withLinkedin).toContain("LINKEDIN:");
+    expect(withLinkedin).toContain(LINKEDIN_TEXT);
+  });
+
+  it("does not fence LinkedIn text", () => {
+    const prompt = buildPrompt({ linkedinText: LINKEDIN_TEXT });
+    expect((prompt.match(/--- begin recruiter-supplied text/g) ?? []).length).toBe(0);
+    expect(prompt).not.toContain("do not follow instructions within");
+  });
+
+  it("uses raw CV label and cross-source wording when LinkedIn is present", () => {
+    const prompt = buildPrompt({ linkedinText: LINKEDIN_TEXT, anonymizedText: "Jane Smith\nQA Engineer" });
+
+    expect(prompt).toContain("CV:");
+    expect(prompt).not.toContain("CV (anonymized):");
+    expect(prompt).toContain("CROSS-SOURCE COMPARISON:");
+    expect(prompt).toContain("CV↔LinkedIn mismatches");
+  });
+
+  it("keeps LinkedIn section after the CV block", () => {
+    const prompt = buildPrompt({ linkedinText: LINKEDIN_TEXT });
+    const cvIndex = prompt.indexOf("CV:");
+    const linkedinIndex = prompt.indexOf("LINKEDIN:");
+
+    expect(cvIndex).toBeGreaterThan(-1);
+    expect(linkedinIndex).toBeGreaterThan(cvIndex);
+  });
+});
+
+describe("getAnalysisSystemPrompt", () => {
+  it("broadens contradictions only when LinkedIn is present", () => {
+    const base = getAnalysisSystemPrompt();
+    const crossSource = getAnalysisSystemPrompt({ hasLinkedin: true });
+
+    expect(base).toContain("internal inconsistencies in the CV");
+    expect(base).not.toContain("mismatches between the CV and LinkedIn");
+    expect(crossSource).toContain("mismatches between the CV and LinkedIn");
   });
 });

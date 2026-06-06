@@ -4,7 +4,7 @@
 	"main": "@astrojs/cloudflare/entrypoints/server",
 	"compatibility_date": "2026-05-08",
 	// Free tier: 10ms CPU per invocation (sufficient for auth + page renders).
-	// CV analysis pipeline (FR-006) will need the $5/mo paid plan (30s CPU cap).
+	// CV analysis pipeline (FR-006) and Browser Run (S-03 LinkedIn scraping) require the Workers Paid plan.
 	"compatibility_flags": [
 		"nodejs_compat"
 	],
@@ -15,6 +15,9 @@
 	},
 	"observability": {
 		"enabled": true,
+	},
+	"browser": {
+		"binding": "BROWSER",
 	},
 	// Playwright E2E test user (tests/e2e/README.md). Synced to Cloudflare on `wrangler deploy`.
 	"vars": {

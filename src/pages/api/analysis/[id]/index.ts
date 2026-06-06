@@ -25,7 +25,7 @@ export const GET: APIRoute = async (context) => {
   const { data: analysis, error: analysisError } = await supabase
     .from("analyses")
     .select(
-      "id, status, match_summary, error_message, created_at, completed_at, job_profile_id, candidate_id, custom_requirements, project_context",
+      "id, status, match_summary, error_message, linkedin_scrape_note, created_at, completed_at, job_profile_id, candidate_id, custom_requirements, project_context",
     )
     .eq("id", id)
     .eq("user_id", context.locals.user.id)
@@ -41,7 +41,7 @@ export const GET: APIRoute = async (context) => {
       .select("id, category, question, rationale, suggested_answer, sort_order")
       .eq("analysis_id", id)
       .order("sort_order"),
-    supabase.from("candidates").select("id, file_name").eq("id", analysis.candidate_id).single(),
+    supabase.from("candidates").select("id, file_name, linkedin_text").eq("id", analysis.candidate_id).single(),
     analysis.job_profile_id
       ? supabase
           .from("job_profiles")
@@ -58,13 +58,17 @@ export const GET: APIRoute = async (context) => {
         status: analysis.status,
         match_summary: analysis.match_summary,
         error_message: analysis.error_message,
+        linkedin_scrape_note: analysis.linkedin_scrape_note,
         created_at: analysis.created_at,
         completed_at: analysis.completed_at,
         custom_requirements: analysis.custom_requirements,
         project_context: analysis.project_context,
       },
       questions: questionsResult.data ?? [],
-      candidate: candidateResult.data ?? { id: analysis.candidate_id, file_name: null },
+      candidate: {
+        ...(candidateResult.data ?? { id: analysis.candidate_id, file_name: null, linkedin_text: null }),
+        has_linkedin: Boolean(candidateResult.data?.linkedin_text?.trim()),
+      },
       profile: profileResult.data ?? null,
     },
     200,

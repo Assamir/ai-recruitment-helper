@@ -12,6 +12,10 @@ const SYNTHETIC_PROFILE = {
 const SYNTHETIC_CUSTOM_REQUIREMENTS = "Requires ISTQB Foundation and 5+ years in regulated industries.";
 const SYNTHETIC_PROJECT_CONTEXT = "Healthcare SaaS, SAFe agile, Azure cloud stack.";
 
+const RAW_CV = `Jane Smith
+Senior QA Engineer
+jane.smith@example.com`;
+
 describe("anonymizeCV → buildAnalysisPrompt boundary", () => {
   for (const fixture of CATCHABLE_CV_FIXTURES) {
     it(`[${fixture.id}] prompt has placeholders and zero raw catchable PII`, () => {
@@ -32,4 +36,29 @@ describe("anonymizeCV → buildAnalysisPrompt boundary", () => {
       }
     });
   }
+
+  it("CV-only path still anonymizes before prompt assembly", () => {
+    const { anonymizedText } = anonymizeCV(RAW_CV);
+    const prompt = buildAnalysisPrompt({
+      anonymizedText,
+      profile: SYNTHETIC_PROFILE,
+    });
+
+    expect(prompt).toContain("CV (anonymized):");
+    expect(prompt).not.toContain("jane.smith@example.com");
+    expect(prompt).toContain("[CANDIDATE_NAME]");
+  });
+
+  it("LinkedIn-present path intentionally passes raw CV text (privacy posture)", () => {
+    const prompt = buildAnalysisPrompt({
+      anonymizedText: RAW_CV,
+      linkedinText: "Jane Smith — Senior QA Engineer at Acme Corp",
+      profile: SYNTHETIC_PROFILE,
+    });
+
+    expect(prompt).toContain("CV:");
+    expect(prompt).not.toContain("CV (anonymized):");
+    expect(prompt).toContain("jane.smith@example.com");
+    expect(prompt).toContain("LINKEDIN:");
+  });
 });

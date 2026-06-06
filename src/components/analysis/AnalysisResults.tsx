@@ -23,6 +23,8 @@ interface AnalysisResultsProps {
   projectContext?: string | null;
   fileName: string | null;
   createdAt: string;
+  hasLinkedin?: boolean;
+  linkedinScrapeNote?: string | null;
 }
 
 const CATEGORY_ORDER: AnalysisCategory[] = ["missing_elements", "contradictions", "vague_claims", "anomalies"];
@@ -71,6 +73,8 @@ export function AnalysisResults({
   projectContext,
   fileName,
   createdAt,
+  hasLinkedin = false,
+  linkedinScrapeNote,
 }: AnalysisResultsProps) {
   const grouped = questions.reduce<Partial<Record<string, Question[]>>>((acc, q) => {
     (acc[q.category] ??= []).push(q);
@@ -103,10 +107,20 @@ export function AnalysisResults({
               {projectContext.length > 160 ? `${projectContext.slice(0, 160).trimEnd()}…` : projectContext}
             </p>
           )}
+          {linkedinScrapeNote && (
+            <p className="mt-1 max-w-2xl text-xs leading-relaxed text-amber-200/70">{linkedinScrapeNote}</p>
+          )}
         </div>
-        <span className="rounded-full border border-green-500/30 bg-green-500/15 px-3 py-1 text-xs font-semibold text-green-300">
-          Completed
-        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          {hasLinkedin && (
+            <span className="rounded-full border border-sky-400/30 bg-sky-500/15 px-3 py-1 text-xs font-semibold text-sky-200">
+              LinkedIn cross-referenced
+            </span>
+          )}
+          <span className="rounded-full border border-green-500/30 bg-green-500/15 px-3 py-1 text-xs font-semibold text-green-300">
+            Completed
+          </span>
+        </div>
       </div>
 
       {/* Summary */}

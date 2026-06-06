@@ -3,7 +3,12 @@ import { User } from "lucide-react";
 import { FileUpload } from "./FileUpload";
 import { ProfileSelector } from "./ProfileSelector";
 import { FormField } from "@/components/auth/FormField";
-import { MAX_CUSTOM_REQUIREMENTS_CHARS, MAX_PROJECT_CONTEXT_CHARS } from "@/lib/analysis/limits";
+import {
+  MAX_CUSTOM_REQUIREMENTS_CHARS,
+  MAX_PROJECT_CONTEXT_CHARS,
+  MAX_LINKEDIN_TEXT_CHARS,
+} from "@/lib/analysis/limits";
+import { isLinkedinProfileUrl } from "@/lib/linkedin/url";
 
 const TEXTAREA_CLASS =
   "w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder-white/30 backdrop-blur-md focus:border-blue-400/50 focus:ring-1 focus:ring-blue-400/30 focus:outline-none";
@@ -27,6 +32,9 @@ export default function AnalysisForm({ profiles }: AnalysisFormProps) {
   const [projectContext, setProjectContext] = useState("");
   const [customRequirementsOpen, setCustomRequirementsOpen] = useState(false);
   const [projectContextOpen, setProjectContextOpen] = useState(false);
+  const [linkedin, setLinkedin] = useState("");
+  const [linkedinUrl, setLinkedinUrl] = useState("");
+  const [linkedinOpen, setLinkedinOpen] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [loading, setLoading] = useState(false);
@@ -55,6 +63,16 @@ export default function AnalysisForm({ profiles }: AnalysisFormProps) {
       setError(`Project context exceeds the ${MAX_PROJECT_CONTEXT_CHARS.toLocaleString()} character limit.`);
       return;
     }
+    const trimmedLinkedin = linkedin.trim();
+    const trimmedLinkedinUrl = linkedinUrl.trim();
+    if (trimmedLinkedin.length > MAX_LINKEDIN_TEXT_CHARS) {
+      setError(`LinkedIn text exceeds the ${MAX_LINKEDIN_TEXT_CHARS.toLocaleString()} character limit.`);
+      return;
+    }
+    if (trimmedLinkedinUrl && !isLinkedinProfileUrl(trimmedLinkedinUrl)) {
+      setError("Please enter a valid LinkedIn profile URL (linkedin.com/in/…).");
+      return;
+    }
 
     setLoading(true);
 
@@ -70,6 +88,8 @@ export default function AnalysisForm({ profiles }: AnalysisFormProps) {
       } else {
         body.append("cv_text", cvText.trim());
       }
+      if (trimmedLinkedin) body.append("linkedin_text", trimmedLinkedin);
+      if (trimmedLinkedinUrl) body.append("linkedin_url", trimmedLinkedinUrl);
 
       const res = await fetch("/api/analysis", { method: "POST", body });
       const json = (await res.json()) as { analysis_id?: string; error?: string };
@@ -144,6 +164,45 @@ export default function AnalysisForm({ profiles }: AnalysisFormProps) {
         <p className="text-xs text-blue-100/40">
           Use instead of or alongside a profile. At least one of profile or custom requirements is required. Describe
           the role only — do not paste candidate personal data here (it is sent to the AI without anonymization).
+        </p>
+      </div>
+
+      <div className="space-y-3">
+        <label className="block text-sm font-medium text-blue-100/80">LinkedIn Profile (optional)</label>
+        <button
+          type="button"
+          onClick={() => {
+            setLinkedinOpen((o) => !o);
+          }}
+          className="text-xs text-blue-100/50 transition-colors hover:text-blue-100/80"
+        >
+          {linkedinOpen ? "▲ Hide" : "▼ Add LinkedIn for cross-reference"}
+        </button>
+        {linkedinOpen && (
+          <div className="space-y-3">
+            <input
+              type="url"
+              placeholder="https://www.linkedin.com/in/username/"
+              value={linkedinUrl}
+              onChange={(e) => {
+                setLinkedinUrl(e.target.value);
+              }}
+              className={TEXTAREA_CLASS}
+            />
+            <textarea
+              rows={6}
+              placeholder="Or paste LinkedIn profile text (About, Experience, Education…)"
+              value={linkedin}
+              onChange={(e) => {
+                setLinkedin(e.target.value);
+              }}
+              className={TEXTAREA_CLASS}
+            />
+          </div>
+        )}
+        <p className="text-xs text-blue-100/40">
+          Candidate data — when provided, the CV and LinkedIn are sent to the AI un-anonymized so contradictions can be
+          detected. URL scraping is best-effort; paste text if scraping fails.
         </p>
       </div>
 
