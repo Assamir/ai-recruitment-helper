@@ -32,7 +32,7 @@ Internal IT recruiters need more than CV summaries — they need audits. The pro
 | F-01 | data-schema-and-rls | (foundation) Supabase tables, migrations, RLS, and QA profile seeds landed | — | Access Control, FR-002 | ready |
 | F-02 | llm-integration-scaffold | (foundation) LLM client configured; 60s analysis viability verified on Workers | — | NFR (60s response), Business Logic | ready |
 | S-01 | first-gated-generation | upload CV + pick QA profile → see categorized questions + match summary | F-01, F-02 | US-01, FR-001, FR-002, FR-006, FR-007, FR-008 | done |
-| S-02 | extended-analysis-inputs | paste custom job requirements and project context to enrich analysis | S-01 | FR-003, FR-005 | proposed |
+| S-02 | extended-analysis-inputs | paste custom job requirements and project context to enrich analysis | S-01 | FR-003, FR-005 | done |
 | S-03 | linkedin-cross-reference | paste LinkedIn profile to detect contradictions between CV and LinkedIn | S-01 | FR-004 | proposed |
 | S-04 | report-export | export analysis report as PDF or Markdown | S-01 | FR-009 | proposed |
 | S-05 | candidate-name-on-card | see the candidate's first and last name on the analysis card | F-01, S-01 | US-01, FR-001 | done |
@@ -112,7 +112,7 @@ What's already in place in the codebase as of 2026-05-26 (auto-researched + user
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Low — adds text input fields and enriches the existing LLM prompt. The risk is that poorly written custom requirements produce poor questions (FR-003 Socratic note); prompt engineering can partially compensate.
-- **Status:** proposed
+- **Status:** done
 
 ### S-03: LinkedIn cross-reference
 
@@ -190,3 +190,4 @@ What's already in place in the codebase as of 2026-05-26 (auto-researched + user
 - **S-05: user can see the candidate's first and last name displayed on the analysis card in the dashboard view, so each analysis is identifiable at a glance instead of being shown anonymously.** — Archived 2026-05-30 → `context/archive/2026-05-30-candidate-name-on-card/`. Lesson: —.
 - **S-06: user can delete a candidate's analysis from the dashboard view, removing it from the list and from persistent storage so stale or mistaken analyses can be cleaned up.** — Archived 2026-05-30 → `context/archive/2026-05-30-analysis-removal/`. Lesson: —.
 - **S-01: upload CV + pick QA profile → see categorized questions + match summary** — Archived 2026-06-06 → `context/archive/2026-05-27-first-gated-generation/`. Lesson: —.
+- **S-02: user can paste custom job requirements as free text (instead of selecting a predefined profile) and optionally enter project-specific context (domain, methodology, tech requirements) to calibrate the analysis.** — Archived 2026-06-06 → `context/archive/2026-06-06-extended-analysis-inputs/`. Lesson: —.
