@@ -19,6 +19,8 @@ interface AnalysisResultsProps {
   questions: Question[];
   matchSummary: string | null;
   profile: Profile | null;
+  customRequirements?: string | null;
+  projectContext?: string | null;
   fileName: string | null;
   createdAt: string;
 }
@@ -39,11 +41,38 @@ const CATEGORY_ICONS: Record<AnalysisCategory, string> = {
   anomalies: "⚠️",
 };
 
-export function AnalysisResults({ questions, matchSummary, profile, fileName, createdAt }: AnalysisResultsProps) {
+function formatRequirementsLabel(
+  profile: Profile | null,
+  customRequirements?: string | null,
+): { label: string; detail?: string } {
+  if (profile) {
+    return {
+      label: [profile.name, profile.seniority_level].filter(Boolean).join(" — "),
+    };
+  }
+  if (customRequirements) {
+    const snippet =
+      customRequirements.length > 120 ? `${customRequirements.slice(0, 120).trimEnd()}…` : customRequirements;
+    return { label: "Custom requirements", detail: snippet };
+  }
+  return { label: "Unknown profile" };
+}
+
+export function AnalysisResults({
+  questions,
+  matchSummary,
+  profile,
+  customRequirements,
+  projectContext,
+  fileName,
+  createdAt,
+}: AnalysisResultsProps) {
   const grouped = questions.reduce<Partial<Record<string, Question[]>>>((acc, q) => {
     (acc[q.category] ??= []).push(q);
     return acc;
   }, {});
+
+  const requirements = formatRequirementsLabel(profile, customRequirements);
 
   const date = new Date(createdAt).toLocaleDateString("en-GB", {
     day: "numeric",
@@ -58,8 +87,17 @@ export function AnalysisResults({ questions, matchSummary, profile, fileName, cr
         <div>
           <h2 className="text-xl font-semibold text-white">{fileName ?? "Pasted CV"}</h2>
           <p className="mt-0.5 text-sm text-blue-100/60">
-            {profile ? [profile.name, profile.seniority_level].filter(Boolean).join(" — ") : "Unknown profile"} · {date}
+            {requirements.label} · {date}
           </p>
+          {requirements.detail && (
+            <p className="mt-1 max-w-2xl text-xs leading-relaxed text-blue-100/50">{requirements.detail}</p>
+          )}
+          {projectContext && (
+            <p className="mt-1 max-w-2xl text-xs leading-relaxed text-blue-100/40">
+              <span className="font-medium text-blue-100/50">Project context:</span>{" "}
+              {projectContext.length > 160 ? `${projectContext.slice(0, 160).trimEnd()}…` : projectContext}
+            </p>
+          )}
         </div>
         <span className="rounded-full border border-green-500/30 bg-green-500/15 px-3 py-1 text-xs font-semibold text-green-300">
           Completed

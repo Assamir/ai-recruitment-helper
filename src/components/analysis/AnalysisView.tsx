@@ -19,6 +19,8 @@ interface ResultData {
     error_message: string | null;
     created_at: string;
     completed_at: string | null;
+    custom_requirements: string | null;
+    project_context: string | null;
   };
   questions: Question[];
   candidate: { id: string; file_name: string | null };
@@ -71,14 +73,18 @@ export default function AnalysisView({ analysisId, initialStatus }: AnalysisView
   const handleRetry = useCallback(async () => {
     const candidateId = results?.candidate.id;
     const jobProfileId = results?.profile?.id;
-    if (!candidateId || !jobProfileId) return;
+    const customRequirements = results?.analysis.custom_requirements;
+    if (!candidateId || (!jobProfileId && !customRequirements)) return;
 
     setRetrying(true);
     setRetryError(null);
     try {
       const form = new FormData();
       form.set("candidate_id", candidateId);
-      form.set("job_profile_id", jobProfileId);
+      if (jobProfileId) form.set("job_profile_id", jobProfileId);
+      if (customRequirements) form.set("custom_requirements", customRequirements);
+      const projectContext = results.analysis.project_context;
+      if (projectContext) form.set("project_context", projectContext);
       const res = await fetch("/api/analysis", { method: "POST", body: form });
       if (!res.ok) {
         const data = (await res.json().catch(() => null)) as { error?: string } | null;
@@ -102,7 +108,7 @@ export default function AnalysisView({ analysisId, initialStatus }: AnalysisView
   }, [initialStatus, fetchResults]);
 
   if (failed) {
-    const canRetry = Boolean(results?.candidate.id && results.profile?.id);
+    const canRetry = Boolean(results?.candidate.id && (results.profile?.id ?? results.analysis.custom_requirements));
     return (
       <div className="space-y-4">
         <h2 className="text-xl font-semibold text-white">Analysis Failed</h2>
@@ -146,6 +152,8 @@ export default function AnalysisView({ analysisId, initialStatus }: AnalysisView
       questions={results.questions}
       matchSummary={results.analysis.match_summary}
       profile={results.profile}
+      customRequirements={results.analysis.custom_requirements}
+      projectContext={results.analysis.project_context}
       fileName={results.candidate.file_name}
       createdAt={results.analysis.created_at}
     />

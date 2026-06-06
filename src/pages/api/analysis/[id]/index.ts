@@ -24,7 +24,9 @@ export const GET: APIRoute = async (context) => {
 
   const { data: analysis, error: analysisError } = await supabase
     .from("analyses")
-    .select("id, status, match_summary, error_message, created_at, completed_at, job_profile_id, candidate_id")
+    .select(
+      "id, status, match_summary, error_message, created_at, completed_at, job_profile_id, candidate_id, custom_requirements, project_context",
+    )
     .eq("id", id)
     .eq("user_id", context.locals.user.id)
     .single();
@@ -58,6 +60,8 @@ export const GET: APIRoute = async (context) => {
         error_message: analysis.error_message,
         created_at: analysis.created_at,
         completed_at: analysis.completed_at,
+        custom_requirements: analysis.custom_requirements,
+        project_context: analysis.project_context,
       },
       questions: questionsResult.data ?? [],
       candidate: candidateResult.data ?? { id: analysis.candidate_id, file_name: null },
