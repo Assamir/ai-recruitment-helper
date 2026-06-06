@@ -285,13 +285,13 @@ None — no schema changes. Existing CV-only analyses carry `pii_map`; LinkedIn-
 
 #### Automated
 
-- [x] 3.1 Type checking passes: `npm run typecheck`
-- [x] 3.2 Linting passes: `npm run lint`
-- [x] 3.3 All tests pass: `npm run test`
-- [x] 3.4 Build passes: `npx astro sync && npm run build`
+- [x] 3.1 Type checking passes: `npm run typecheck` — a65d35c
+- [x] 3.2 Linting passes: `npm run lint` — a65d35c
+- [x] 3.3 All tests pass: `npm run test` — a65d35c
+- [x] 3.4 Build passes: `npx astro sync && npm run build` — a65d35c
 
 #### Manual
 
-- [x] 3.5 Export actions visible only on completed analyses
-- [x] 3.6 Markdown downloads; PDF opens print dialog
-- [x] 3.7 Server/network error shows readable inline message and re-enables buttons
+- [x] 3.5 Export actions visible only on completed analyses — a65d35c
+- [x] 3.6 Markdown downloads; PDF opens print dialog — a65d35c
+- [x] 3.7 Server/network error shows readable inline message and re-enables buttons — a65d35c
