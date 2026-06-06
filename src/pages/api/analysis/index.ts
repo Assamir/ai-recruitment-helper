@@ -17,12 +17,14 @@ import {
 import { splitFullName, extractCandidateName } from "@/lib/candidate/name";
 import { getWorkerBindings } from "@/lib/cloudflare/env";
 import { isLinkedinProfileUrl } from "@/lib/linkedin/url";
-import { LinkedInAuthError } from "@/lib/linkedin/errors";
+import { LinkedInAuthError, LinkedInNotFoundError } from "@/lib/linkedin/errors";
 import type { TablesUpdate } from "@/db/database.types";
 
 const LINKEDIN_UNAVAILABLE_NOTE = "LinkedIn could not be fetched — paste profile text to include it in the analysis.";
 const LINKEDIN_SESSION_EXPIRED_NOTE =
   "LinkedIn session expired — re-authenticate and refresh the LINKEDIN_SESSION_COOKIE secret, then retry. Profile text was not cross-referenced.";
+const LINKEDIN_NOT_FOUND_NOTE =
+  "LinkedIn profile not found — check the URL. Analysis used the CV only.";
 
 export const POST: APIRoute = async (context) => {
   if (!context.locals.user) {
@@ -301,10 +303,15 @@ export const POST: APIRoute = async (context) => {
               const message = err instanceof Error ? err.message : "LinkedIn scrape failed";
               // eslint-disable-next-line no-console -- non-fatal scrape failure signal
               console.error(`LinkedIn scrape failed for analysis ${analysisId}: ${message}`);
-              // A dead/expired session needs a human to refresh li_at — say so
-              // explicitly instead of the generic "couldn't fetch" note.
-              linkedinScrapeNote =
-                err instanceof LinkedInAuthError ? LINKEDIN_SESSION_EXPIRED_NOTE : LINKEDIN_UNAVAILABLE_NOTE;
+              // Tailor the note: a dead session needs a human to refresh li_at,
+              // a bad URL is the user's to fix; otherwise stay generic.
+              if (err instanceof LinkedInNotFoundError) {
+                linkedinScrapeNote = LINKEDIN_NOT_FOUND_NOTE;
+              } else if (err instanceof LinkedInAuthError) {
+                linkedinScrapeNote = LINKEDIN_SESSION_EXPIRED_NOTE;
+              } else {
+                linkedinScrapeNote = LINKEDIN_UNAVAILABLE_NOTE;
+              }
             }
           } else {
             linkedinScrapeNote = LINKEDIN_UNAVAILABLE_NOTE;

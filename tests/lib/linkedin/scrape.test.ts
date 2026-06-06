@@ -71,6 +71,10 @@ describe("classifyLinkedinPageText", () => {
     expect(classifyLinkedinPageText("This page doesn't exist")).toBe("not_found");
   });
 
+  it("detects non-English (PL) not-found pages", () => {
+    expect(classifyLinkedinPageText("Ta strona nie istnieje")).toBe("not_found");
+  });
+
   it("detects non-English (PL) auth walls", () => {
     expect(classifyLinkedinPageText("Zaloguj się Nie pamiętasz hasła Dołącz do LinkedIn")).toBe("auth");
   });
@@ -114,6 +118,15 @@ describe("classifyLinkedinPage", () => {
         text: "Jane Smith Senior QA Engineer at Acme Corp",
       }),
     ).toBe("success");
+  });
+
+  it("prefers not-found over auth when a bad URL bounces to a login-styled 404", () => {
+    expect(
+      classifyLinkedinPage({
+        url: "https://www.linkedin.com/authwall",
+        text: "This page doesn't exist. Sign in to LinkedIn.",
+      }),
+    ).toBe("not_found");
   });
 });
 
