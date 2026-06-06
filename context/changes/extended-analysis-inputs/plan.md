@@ -300,57 +300,57 @@ None. All columns and RLS already exist; existing rows (all with a `job_profile_
 
 #### Automated
 
-- [x] 1.1 Unit tests pass: `npm run test`
-- [x] 1.2 Type checking passes: `npm run typecheck`
-- [x] 1.3 Linting passes: `npm run lint`
+- [x] 1.1 Unit tests pass: `npm run test` — 7eaa3d6
+- [x] 1.2 Type checking passes: `npm run typecheck` — 7eaa3d6
+- [x] 1.3 Linting passes: `npm run lint` — 7eaa3d6
 
 #### Manual
 
-- [x] 1.4 Spot-read generated prompt for each combination — correct section order, no empty headings
+- [x] 1.4 Spot-read generated prompt for each combination — correct section order, no empty headings — 7eaa3d6
 
 ### Phase 2: API route + background pipeline
 
 #### Automated
 
-- [x] 2.1 Type checking passes: `npm run typecheck`
-- [x] 2.2 Linting passes: `npm run lint`
-- [x] 2.3 Unit tests pass: `npm run test`
+- [x] 2.1 Type checking passes: `npm run typecheck` — 2a77aea
+- [x] 2.2 Linting passes: `npm run lint` — 2a77aea
+- [x] 2.3 Unit tests pass: `npm run test` — 2a77aea
 
 #### Manual
 
-- [x] 2.4 Custom-only POST → 201, completes with questions
-- [x] 2.5 Profile + custom + context POST → 201, all sections in prompt
-- [x] 2.6 Neither profile nor custom → 400 with clear message
-- [x] 2.7 Over-cap custom requirements / project context → 400 cap message
-- [x] 2.8 `analyses` row persists `custom_requirements` / `project_context`
+- [x] 2.4 Custom-only POST → 201, completes with questions — 2a77aea
+- [x] 2.5 Profile + custom + context POST → 201, all sections in prompt — 2a77aea
+- [x] 2.6 Neither profile nor custom → 400 with clear message — 2a77aea
+- [x] 2.7 Over-cap custom requirements / project context → 400 cap message — 2a77aea
+- [x] 2.8 `analyses` row persists `custom_requirements` / `project_context` — 2a77aea
 
 ### Phase 3: Frontend form
 
 #### Automated
 
-- [x] 3.1 Type checking passes: `npm run typecheck`
-- [x] 3.2 Linting passes: `npm run lint`
-- [x] 3.3 Build passes: `npm run build`
+- [x] 3.1 Type checking passes: `npm run typecheck` — 2d726e3
+- [x] 3.2 Linting passes: `npm run lint` — 2d726e3
+- [x] 3.3 Build passes: `npm run build` — 2d726e3
 
 #### Manual
 
-- [x] 3.4 Custom-only submission starts analysis and navigates to result
-- [x] 3.5 Profile + custom + context all sent and persisted
-- [x] 3.6 Neither set → inline client error, no request fired
-- [x] 3.7 Over-cap text → inline client error
-- [x] 3.8 New textareas match existing cosmic-glass styling
+- [x] 3.4 Custom-only submission starts analysis and navigates to result — 2d726e3
+- [x] 3.5 Profile + custom + context all sent and persisted — 2d726e3
+- [x] 3.6 Neither set → inline client error, no request fired — 2d726e3
+- [x] 3.7 Over-cap text → inline client error — 2d726e3
+- [x] 3.8 New textareas match existing cosmic-glass styling — 2d726e3
 
 ### Phase 4: Results + retry surfacing
 
 #### Automated
 
-- [x] 4.1 Type checking passes: `npm run typecheck`
-- [x] 4.2 Linting passes: `npm run lint`
-- [x] 4.3 Build passes: `npm run build`
+- [x] 4.1 Type checking passes: `npm run typecheck` — c112d0b
+- [x] 4.2 Linting passes: `npm run lint` — c112d0b
+- [x] 4.3 Build passes: `npm run build` — c112d0b
 
 #### Manual
 
-- [x] 4.4 Custom-only analysis header shows "Custom requirements" + requirements text
-- [x] 4.5 Retry of failed custom-only analysis re-runs without re-upload
-- [x] 4.6 Retry of profile-based analysis still works
-- [x] 4.7 Profile + custom + context analysis displays and retries correctly
+- [x] 4.4 Custom-only analysis header shows "Custom requirements" + requirements text — c112d0b
+- [x] 4.5 Retry of failed custom-only analysis re-runs without re-upload — c112d0b
+- [x] 4.6 Retry of profile-based analysis still works — c112d0b
+- [x] 4.7 Profile + custom + context analysis displays and retries correctly — c112d0b
