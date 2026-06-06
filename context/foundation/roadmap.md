@@ -3,7 +3,7 @@ project: "AI-Recruiter"
 version: 1
 status: draft
 created: 2026-05-26
-updated: 2026-05-30
+updated: 2026-06-06
 prd_version: 1
 main_goal: market-feedback
 top_blocker: time
@@ -31,7 +31,7 @@ Internal IT recruiters need more than CV summaries — they need audits. The pro
 |---|---|---|---|---|---|
 | F-01 | data-schema-and-rls | (foundation) Supabase tables, migrations, RLS, and QA profile seeds landed | — | Access Control, FR-002 | ready |
 | F-02 | llm-integration-scaffold | (foundation) LLM client configured; 60s analysis viability verified on Workers | — | NFR (60s response), Business Logic | ready |
-| S-01 | first-gated-generation | upload CV + pick QA profile → see categorized questions + match summary | F-01, F-02 | US-01, FR-001, FR-002, FR-006, FR-007, FR-008 | proposed |
+| S-01 | first-gated-generation | upload CV + pick QA profile → see categorized questions + match summary | F-01, F-02 | US-01, FR-001, FR-002, FR-006, FR-007, FR-008 | done |
 | S-02 | extended-analysis-inputs | paste custom job requirements and project context to enrich analysis | S-01 | FR-003, FR-005 | proposed |
 | S-03 | linkedin-cross-reference | paste LinkedIn profile to detect contradictions between CV and LinkedIn | S-01 | FR-004 | proposed |
 | S-04 | report-export | export analysis report as PDF or Markdown | S-01 | FR-009 | proposed |
@@ -100,7 +100,7 @@ What's already in place in the codebase as of 2026-05-26 (auto-researched + user
 - **Unknowns:**
   - Can PDF/DOCX parsing libraries (`pdf-parse`, `mammoth`) run on the workerd runtime? — Owner: TBD. Block: no (paste-CV-text fallback exists per FR-001 Socratic resolution).
 - **Risk:** Largest slice — spans file upload, text extraction, PII anonymization, LLM prompting, response parsing, and results UI. Sequenced immediately after foundations because it is the north star: if recruiters don't find these questions valuable, the rest of the roadmap doesn't matter. The workerd parsing concern has a known mitigation (paste fallback).
-- **Status:** proposed
+- **Status:** done
 
 ### S-02: Extended analysis inputs
 
@@ -189,3 +189,4 @@ What's already in place in the codebase as of 2026-05-26 (auto-researched + user
 
 - **S-05: user can see the candidate's first and last name displayed on the analysis card in the dashboard view, so each analysis is identifiable at a glance instead of being shown anonymously.** — Archived 2026-05-30 → `context/archive/2026-05-30-candidate-name-on-card/`. Lesson: —.
 - **S-06: user can delete a candidate's analysis from the dashboard view, removing it from the list and from persistent storage so stale or mistaken analyses can be cleaned up.** — Archived 2026-05-30 → `context/archive/2026-05-30-analysis-removal/`. Lesson: —.
+- **S-01: upload CV + pick QA profile → see categorized questions + match summary** — Archived 2026-06-06 → `context/archive/2026-05-27-first-gated-generation/`. Lesson: —.
