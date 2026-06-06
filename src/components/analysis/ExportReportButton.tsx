@@ -15,12 +15,21 @@ export default function ExportReportButton({ analysisId }: ExportReportButtonPro
     const url = `/api/analysis/${analysisId}/export?format=${format}`;
 
     try {
+      const res = await fetch(url);
+
       if (format === "pdf") {
-        window.open(url, "_blank", "noopener,noreferrer");
+        if (!res.ok) {
+          const json = (await res.json().catch(() => null)) as { error?: string } | null;
+          setError(json?.error ?? "Export failed. Please try again.");
+          return;
+        }
+        const html = await res.text();
+        const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+        const objectUrl = URL.createObjectURL(blob);
+        window.open(objectUrl, "_blank", "noopener,noreferrer");
         return;
       }
 
-      const res = await fetch(url);
       if (!res.ok) {
         const json = (await res.json().catch(() => null)) as { error?: string } | null;
         setError(json?.error ?? "Export failed. Please try again.");

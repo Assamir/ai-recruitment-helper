@@ -1,4 +1,5 @@
 import type { AnalysisCategory } from "@/lib/analysis/schema";
+import { formatRequirementsLabel } from "@/lib/analysis/format-requirements";
 
 interface Question {
   id: string;
@@ -42,28 +43,6 @@ const CATEGORY_ICONS: Record<AnalysisCategory, string> = {
   vague_claims: "🔍",
   anomalies: "⚠️",
 };
-
-function formatRequirementsLabel(
-  profile: Profile | null,
-  customRequirements?: string | null,
-): { label: string; detail?: string } {
-  const snippet = customRequirements
-    ? customRequirements.length > 120
-      ? `${customRequirements.slice(0, 120).trimEnd()}…`
-      : customRequirements
-    : undefined;
-
-  if (profile) {
-    const profileLabel = [profile.name, profile.seniority_level].filter(Boolean).join(" — ");
-    return customRequirements
-      ? { label: `${profileLabel} + custom requirements`, detail: snippet }
-      : { label: profileLabel };
-  }
-  if (customRequirements) {
-    return { label: "Custom requirements", detail: snippet };
-  }
-  return { label: "Unknown profile" };
-}
 
 export function AnalysisResults({
   questions,

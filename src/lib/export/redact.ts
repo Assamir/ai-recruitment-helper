@@ -16,9 +16,13 @@ function uniqueNonEmptySeeds(seed: RedactionSeed): string[] {
   return result.sort((a, b) => b.length - a.length);
 }
 
-function replaceAll(text: string, needle: string, replacement: string): string {
+function escapeRegex(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function replaceAllCaseInsensitive(text: string, needle: string, replacement: string): string {
   if (!needle) return text;
-  return text.split(needle).join(replacement);
+  return text.replace(new RegExp(escapeRegex(needle), "gi"), replacement);
 }
 
 function applyPatternLayer(text: string): string {
@@ -46,7 +50,7 @@ function applyPatternLayer(text: string): string {
 export function redactText(text: string, seed: RedactionSeed): string {
   let result = text;
   for (const needle of uniqueNonEmptySeeds(seed)) {
-    result = replaceAll(result, needle, REDACTED);
+    result = replaceAllCaseInsensitive(result, needle, REDACTED);
   }
   return applyPatternLayer(result);
 }

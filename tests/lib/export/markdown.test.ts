@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { toMarkdown, CONFIDENTIALITY_HEADER } from "@/lib/export/markdown";
+import { toMarkdown } from "@/lib/export/markdown";
 import type { ExportReport } from "@/lib/export/types";
 
 const FROZEN_NOW = new Date("2026-06-06T12:00:00.000Z");
@@ -56,15 +56,57 @@ describe("toMarkdown", () => {
 
     const md = toMarkdown(report, seed, FROZEN_NOW);
 
-    expect(md).toContain(CONFIDENTIALITY_HEADER(FROZEN_NOW).trim());
-    expect(md).toContain("## Missing Elements");
-    expect(md).toContain("## Contradictions");
-    expect(md).toContain("## Vague Claims");
-    expect(md).toContain("## Anomalies");
-    expect(md).not.toContain("Acme Corp");
-    expect(md).toContain("[REDACTED]");
-    expect(md).toContain("**LinkedIn:** Cross-referenced");
-    expect(md).toContain("**Project context:** E-commerce platform rewrite");
-    expect(md).toContain("Generated 2026-06-06T12:00:00.000Z");
+    expect(md).toMatchInlineSnapshot(`
+      "# CONFIDENTIAL
+
+      This document contains an anonymized candidate analysis.
+      Do not redistribute.
+
+      Generated 2026-06-06T12:00:00.000Z
+
+      ---
+
+      # Candidate Analysis Report
+
+      **Analysis ID:** aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa
+      **Requirements:** Senior QA Engineer — Senior
+      **Created:** 2026-06-01
+      **LinkedIn:** Cross-referenced
+      **LinkedIn note:** Profile fetched successfully
+      **Project context:** E-commerce platform rewrite
+
+      ## Match Summary
+
+      Worked at [REDACTED] for five years.
+
+      ## Missing Elements
+
+      ### 1. What testing frameworks were used?
+
+      **Rationale:** CV lacks explicit framework names.
+
+      **Suggested answer:** Ask about Cypress and Playwright experience.
+
+      ## Contradictions
+
+      ### 1. Tenure at [REDACTED]?
+
+      **Rationale:** [REDACTED] dates conflict.
+
+      ## Vague Claims
+
+      ### 1. What does 'led initiatives' mean?
+
+      **Rationale:** Claim is not quantified.
+
+      **Suggested answer:** Probe for team size and outcomes.
+
+      ## Anomalies
+
+      ### 1. Gap between 2019 and 2021?
+
+      **Rationale:** Unexplained employment gap.
+      "
+    `);
   });
 });

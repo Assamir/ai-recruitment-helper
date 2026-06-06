@@ -37,6 +37,14 @@ describe("redactText", () => {
     expect(result).toBe("[REDACTED] and [REDACTED] both appear here.");
   });
 
+  it("redacts name variants case-insensitively", () => {
+    const text = "JANE DOE and jane doe both appear.";
+    const seed = { piiMapValues: [], candidateNames: ["Jane Doe"] };
+    const result = redactText(text, seed);
+    expect(result).not.toMatch(/jane doe/i);
+    expect(result).toBe("[REDACTED] and [REDACTED] both appear.");
+  });
+
   it("redacts phones and urls via pattern layer", () => {
     const text = "Call +1-555-123-4567 or visit https://linkedin.com/in/jane";
     const result = redactText(text, { piiMapValues: [], candidateNames: [] });

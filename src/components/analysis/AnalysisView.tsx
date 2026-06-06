@@ -151,7 +151,7 @@ export default function AnalysisView({ analysisId, initialStatus }: AnalysisView
 
   return (
     <div className="space-y-4">
-      <ExportReportButton analysisId={analysisId} />
+      {results.analysis.status === "completed" && <ExportReportButton analysisId={analysisId} />}
       <AnalysisResults
         questions={results.questions}
         matchSummary={results.analysis.match_summary}

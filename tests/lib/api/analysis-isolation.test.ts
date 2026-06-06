@@ -410,5 +410,17 @@ describe("API analysis isolation (fake ownership-enforcing client)", () => {
       expect(body).not.toContain("Jane Doe");
       expect(body).not.toContain("jane.doe@example.com");
     });
+
+    it("returns printable html for completed analysis with format=pdf", async () => {
+      createClientImpl = () => seedExportOwnedByA();
+      const res = await getExport(exportCtx("pdf"));
+      expect(res.status).toBe(200);
+      expect(res.headers.get("Content-Type")).toMatch(/^text\/html/);
+      expect(res.headers.get("Content-Disposition")).toBeNull();
+      const body = await res.text();
+      expect(body).toContain("<!doctype html>");
+      expect(body).toContain("window.print()");
+      expect(body).toContain("CONFIDENTIAL");
+    });
   });
 });

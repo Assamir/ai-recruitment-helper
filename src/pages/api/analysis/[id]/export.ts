@@ -125,12 +125,11 @@ export const GET: APIRoute = async (context) => {
       : Promise.resolve({ data: null, error: null }),
   ]);
 
-  const candidate = candidateResult.data ?? {
-    pii_map: null,
-    first_name: null,
-    last_name: null,
-    linkedin_text: null,
-  };
+  if (candidateResult.error) {
+    return jsonResponse({ error: "Failed to load candidate data", code: "DB_ERROR" }, 500);
+  }
+
+  const candidate = candidateResult.data;
   const hasLinkedin = Boolean(candidate.linkedin_text?.trim());
   const report = buildExportReport(analysis, questionsResult.data ?? [], profileResult.data ?? null, hasLinkedin);
   const seed = buildRedactionSeed(candidate);
