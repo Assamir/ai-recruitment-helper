@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { extractLinkedinProfileText, classifyLinkedinPageText } from "@/lib/linkedin/extract";
+import {
+  extractLinkedinProfileText,
+  classifyLinkedinPageText,
+  classifyLinkedinPage,
+  isLinkedinAuthUrl,
+} from "@/lib/linkedin/extract";
 import { isLinkedinProfileUrl, normalizeLinkedinProfileUrl } from "@/lib/linkedin/url";
 import { MAX_LINKEDIN_TEXT_CHARS } from "@/lib/analysis/limits";
 import {
@@ -66,8 +71,49 @@ describe("classifyLinkedinPageText", () => {
     expect(classifyLinkedinPageText("This page doesn't exist")).toBe("not_found");
   });
 
+  it("detects non-English (PL) auth walls", () => {
+    expect(classifyLinkedinPageText("Zaloguj się Nie pamiętasz hasła Dołącz do LinkedIn")).toBe("auth");
+  });
+
   it("treats profile content as success", () => {
     expect(classifyLinkedinPageText("Jane Smith Senior QA Engineer at Acme Corp")).toBe("success");
+  });
+});
+
+describe("isLinkedinAuthUrl", () => {
+  it("flags login/authwall/checkpoint redirects regardless of language", () => {
+    expect(isLinkedinAuthUrl("https://www.linkedin.com/authwall?trk=x")).toBe(true);
+    expect(isLinkedinAuthUrl("https://www.linkedin.com/login")).toBe(true);
+    expect(isLinkedinAuthUrl("https://www.linkedin.com/checkpoint/challenge")).toBe(true);
+    expect(isLinkedinAuthUrl("https://www.linkedin.com/uas/login")).toBe(true);
+  });
+
+  it("flags any redirect away from a /in/ profile", () => {
+    expect(isLinkedinAuthUrl("https://www.linkedin.com/feed")).toBe(true);
+  });
+
+  it("accepts a real profile URL", () => {
+    expect(isLinkedinAuthUrl("https://www.linkedin.com/in/jane-smith/")).toBe(false);
+  });
+});
+
+describe("classifyLinkedinPage", () => {
+  it("treats a login redirect as auth even when text looks profile-like", () => {
+    expect(
+      classifyLinkedinPage({
+        url: "https://www.linkedin.com/authwall",
+        text: "Jane Smith Senior QA Engineer at Acme Corp",
+      }),
+    ).toBe("auth");
+  });
+
+  it("classifies a genuine profile page as success", () => {
+    expect(
+      classifyLinkedinPage({
+        url: "https://www.linkedin.com/in/jane-smith/",
+        text: "Jane Smith Senior QA Engineer at Acme Corp",
+      }),
+    ).toBe("success");
   });
 });
 

@@ -17,9 +17,12 @@ import {
 import { splitFullName, extractCandidateName } from "@/lib/candidate/name";
 import { getWorkerBindings } from "@/lib/cloudflare/env";
 import { isLinkedinProfileUrl } from "@/lib/linkedin/url";
+import { LinkedInAuthError } from "@/lib/linkedin/errors";
 import type { TablesUpdate } from "@/db/database.types";
 
 const LINKEDIN_UNAVAILABLE_NOTE = "LinkedIn could not be fetched — paste profile text to include it in the analysis.";
+const LINKEDIN_SESSION_EXPIRED_NOTE =
+  "LinkedIn session expired — re-authenticate and refresh the LINKEDIN_SESSION_COOKIE secret, then retry. Profile text was not cross-referenced.";
 
 export const POST: APIRoute = async (context) => {
   if (!context.locals.user) {
@@ -298,7 +301,10 @@ export const POST: APIRoute = async (context) => {
               const message = err instanceof Error ? err.message : "LinkedIn scrape failed";
               // eslint-disable-next-line no-console -- non-fatal scrape failure signal
               console.error(`LinkedIn scrape failed for analysis ${analysisId}: ${message}`);
-              linkedinScrapeNote = LINKEDIN_UNAVAILABLE_NOTE;
+              // A dead/expired session needs a human to refresh li_at — say so
+              // explicitly instead of the generic "couldn't fetch" note.
+              linkedinScrapeNote =
+                err instanceof LinkedInAuthError ? LINKEDIN_SESSION_EXPIRED_NOTE : LINKEDIN_UNAVAILABLE_NOTE;
             }
           } else {
             linkedinScrapeNote = LINKEDIN_UNAVAILABLE_NOTE;

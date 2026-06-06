@@ -1,13 +1,20 @@
 import { launch } from "@cloudflare/playwright";
 import { MAX_LINKEDIN_TEXT_CHARS } from "@/lib/analysis/limits";
-import { classifyLinkedinPageText, extractLinkedinProfileText } from "./extract";
+import { classifyLinkedinPage, classifyLinkedinPageText, extractLinkedinProfileText } from "./extract";
 import { LinkedInAuthError, LinkedInNotFoundError, LinkedInScrapeError, LinkedInTimeoutError } from "./errors";
 import type { ScrapeLinkedinProfileInput, ScrapeLinkedinProfileResult } from "./types";
 import { isLinkedinProfileUrl, normalizeLinkedinProfileUrl } from "./url";
 
 const DEFAULT_TIMEOUT_MS = 25_000;
+const MIN_PROFILE_TEXT_CHARS = 200;
 
-export { extractLinkedinProfileText, classifyLinkedinPageText, isLinkedinProfileUrl, normalizeLinkedinProfileUrl };
+export {
+  extractLinkedinProfileText,
+  classifyLinkedinPage,
+  classifyLinkedinPageText,
+  isLinkedinProfileUrl,
+  normalizeLinkedinProfileUrl,
+};
 
 export async function scrapeLinkedinProfile(input: ScrapeLinkedinProfileInput): Promise<ScrapeLinkedinProfileResult> {
   const { browser, url, sessionCookie, timeoutMs = DEFAULT_TIMEOUT_MS } = input;
@@ -36,23 +43,19 @@ export async function scrapeLinkedinProfile(input: ScrapeLinkedinProfileInput): 
 
     await page.goto(normalizedUrl, { waitUntil: "domcontentloaded", timeout: timeoutMs });
 
-    await expandCollapsibleSections(page, timeoutMs);
+    const result = await collectProfile(page, normalizedUrl, timeoutMs);
 
-    const html = await page.content();
-    const text = extractLinkedinProfileText(html);
-    const classification = classifyLinkedinPageText(text);
-
-    if (classification === "auth") {
+    if (result.classification === "auth") {
       throw new LinkedInAuthError();
     }
-    if (classification === "not_found") {
+    if (result.classification === "not_found") {
       throw new LinkedInNotFoundError();
     }
-    if (text.trim().length < 50) {
-      throw new LinkedInScrapeError("LinkedIn profile text was too short to use");
+    if (result.text.trim().length < MIN_PROFILE_TEXT_CHARS) {
+      throw new LinkedInScrapeError("LinkedIn profile text was too short to be a real profile");
     }
 
-    return { text: text.slice(0, MAX_LINKEDIN_TEXT_CHARS) };
+    return { text: result.text.slice(0, MAX_LINKEDIN_TEXT_CHARS) };
   } catch (err) {
     if (err instanceof LinkedInScrapeError) {
       throw err;
@@ -63,8 +66,30 @@ export async function scrapeLinkedinProfile(input: ScrapeLinkedinProfileInput): 
     }
     throw new LinkedInScrapeError(message);
   } finally {
-    await pwBrowser?.close().catch(() => undefined);
+    // Swallow teardown noise (Browser Run may emit a late websocket error on close).
+    try {
+      await pwBrowser?.close();
+    } catch {
+      // ignore — the session is being discarded anyway
+    }
   }
+}
+
+interface CollectedProfile {
+  text: string;
+  classification: ReturnType<typeof classifyLinkedinPage>;
+}
+
+async function collectProfile(
+  page: import("@cloudflare/playwright").Page,
+  expectedUrl: string,
+  timeoutMs: number,
+): Promise<CollectedProfile> {
+  await expandCollapsibleSections(page, timeoutMs);
+  const html = await page.content();
+  const text = extractLinkedinProfileText(html);
+  const classification = classifyLinkedinPage({ url: page.url() || expectedUrl, text });
+  return { text, classification };
 }
 
 async function expandCollapsibleSections(page: import("@cloudflare/playwright").Page, timeoutMs: number) {

@@ -112,7 +112,7 @@ export function AnalysisResults({
           )}
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {hasLinkedin && (
+          {hasLinkedin && !linkedinScrapeNote && (
             <span className="rounded-full border border-sky-400/30 bg-sky-500/15 px-3 py-1 text-xs font-semibold text-sky-200">
               LinkedIn cross-referenced
             </span>

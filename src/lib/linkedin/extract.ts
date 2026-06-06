@@ -30,16 +30,57 @@ export function extractLinkedinProfileText(html: string): string {
   return joined.slice(0, MAX_LINKEDIN_TEXT_CHARS);
 }
 
-export function classifyLinkedinPageText(text: string): "success" | "auth" | "not_found" {
+export type LinkedinPageClassification = "success" | "auth" | "not_found";
+
+// LinkedIn redirects an unauthenticated/blocked request to one of these paths
+// regardless of UI language, so the final URL is the most reliable signal.
+const AUTH_URL_RE = /\/(authwall|login|uas\/login|checkpoint|signup|join)\b/i;
+
+export function isLinkedinAuthUrl(url: string): boolean {
+  try {
+    const { pathname } = new URL(url);
+    if (AUTH_URL_RE.test(pathname)) return true;
+    // A valid profile fetch stays on /in/<slug>; anything else means we were
+    // bounced off the profile (login wall / interstitial).
+    return !/\/in\//i.test(pathname);
+  } catch {
+    return false;
+  }
+}
+
+// Language-agnostic-ish markers for the login/join wall served on a /in/ URL.
+const AUTH_TEXT_MARKERS = [
+  "join linkedin",
+  "welcome back",
+  "checkpoint",
+  "sign in to",
+  "new to linkedin",
+  "agree & join",
+  "forgot password",
+  "zaloguj si", // PL: "Zaloguj się"
+  "nie pami", // PL: "Nie pamiętasz hasła"
+  "do linkedin", // PL: "Dołącz do LinkedIn"
+];
+
+export function classifyLinkedinPageText(text: string): LinkedinPageClassification {
   const lower = text.toLowerCase();
   if (
-    lower.includes("sign in") &&
-    (lower.includes("join linkedin") || lower.includes("welcome back") || lower.includes("checkpoint"))
+    lower.includes("this page doesn't exist") ||
+    lower.includes("page not found") ||
+    lower.includes("nie znaleziono")
   ) {
-    return "auth";
-  }
-  if (lower.includes("this page doesn't exist") || lower.includes("page not found")) {
     return "not_found";
   }
+  if (AUTH_TEXT_MARKERS.some((marker) => lower.includes(marker))) {
+    return "auth";
+  }
   return "success";
+}
+
+/** Combine the post-navigation URL (strongest signal) with page-text heuristics. */
+export function classifyLinkedinPage(input: { url: string; text: string }): LinkedinPageClassification {
+  if (isLinkedinAuthUrl(input.url)) {
+    return "auth";
+  }
+  return classifyLinkedinPageText(input.text);
 }

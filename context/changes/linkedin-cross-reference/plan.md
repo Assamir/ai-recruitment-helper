@@ -417,9 +417,9 @@ new column must be additive/backward-compatible per the deploy rules in `AGENTS.
 - [x] 1.4 Build passes: `npm run build`
 
 #### Manual
-- [ ] 1.5 Contradicting LinkedIn text yields a contradictions question referencing the mismatch
-- [ ] 1.6 No-LinkedIn path still anonymizes the CV (unchanged behavior)
-- [ ] 1.7 Form copy states LinkedIn is sent un-anonymized when used
+- [x] 1.5 Contradicting LinkedIn text yields a contradictions question referencing the mismatch
+- [x] 1.6 No-LinkedIn path still anonymizes the CV (unchanged behavior)
+- [x] 1.7 Form copy states LinkedIn is sent un-anonymized when used
 
 ### Phase 2: Link scraping via Browser Run + Playwright
 
@@ -430,7 +430,7 @@ new column must be additive/backward-compatible per the deploy rules in `AGENTS.
 - [x] 2.4 Build passes (with `@cloudflare/playwright` + browser binding): `npm run build`
 
 #### Manual
-- [ ] 2.5 Valid URL + seeded session scrapes profile text into the prompt (`wrangler dev --remote`)
+- [x] 2.5 Valid URL + seeded session scrapes profile text into the prompt (verified on PROD)
 - [ ] 2.6 Blocked/expired session or bad URL → analysis completes from CV with "LinkedIn unavailable" note
 - [ ] 2.7 Scraped text persisted; retry does not re-scrape
 
@@ -443,6 +443,6 @@ new column must be additive/backward-compatible per the deploy rules in `AGENTS.
 - [x] 3.4 Build passes: `npm run build`
 
 #### Manual
-- [ ] 3.5 Results header shows "LinkedIn cross-referenced" badge when used
+- [x] 3.5 Results header shows "LinkedIn cross-referenced" badge when used
 - [ ] 3.6 Failed scrape shows the "paste text" note and no badge
 - [ ] 3.7 Retry reproduces the cross-reference with no re-paste/re-scrape
