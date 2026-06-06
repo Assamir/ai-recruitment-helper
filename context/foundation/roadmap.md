@@ -33,7 +33,7 @@ Internal IT recruiters need more than CV summaries — they need audits. The pro
 | F-02 | llm-integration-scaffold | (foundation) LLM client configured; 60s analysis viability verified on Workers | — | NFR (60s response), Business Logic | ready |
 | S-01 | first-gated-generation | upload CV + pick QA profile → see categorized questions + match summary | F-01, F-02 | US-01, FR-001, FR-002, FR-006, FR-007, FR-008 | done |
 | S-02 | extended-analysis-inputs | paste custom job requirements and project context to enrich analysis | S-01 | FR-003, FR-005 | done |
-| S-03 | linkedin-cross-reference | paste LinkedIn profile to detect contradictions between CV and LinkedIn | S-01 | FR-004 | proposed |
+| S-03 | linkedin-cross-reference | paste LinkedIn profile to detect contradictions between CV and LinkedIn | S-01 | FR-004 | done |
 | S-04 | report-export | export analysis report as PDF or Markdown | S-01 | FR-009 | proposed |
 | S-05 | candidate-name-on-card | see the candidate's first and last name on the analysis card | F-01, S-01 | US-01, FR-001 | done |
 | S-06 | analysis-removal | delete a candidate's analysis from the dashboard | F-01, S-01 | US-01, FR-002 | done |
@@ -125,7 +125,7 @@ What's already in place in the codebase as of 2026-05-26 (auto-researched + user
 - **Unknowns:**
   - How reliably can unstructured LinkedIn text be parsed and cross-referenced against structured CV claims? — Owner: TBD. Block: no (input is optional; degraded parsing doesn't break the core loop).
 - **Risk:** Medium — LinkedIn data is unstructured and varies wildly (FR-004 Socratic note). Cross-referencing is harder than adding text fields because it introduces a second source of truth. Sequenced after S-01 to keep the core loop simple first.
-- **Status:** proposed
+- **Status:** done
 
 ### S-04: Report export
 
@@ -191,3 +191,4 @@ What's already in place in the codebase as of 2026-05-26 (auto-researched + user
 - **S-06: user can delete a candidate's analysis from the dashboard view, removing it from the list and from persistent storage so stale or mistaken analyses can be cleaned up.** — Archived 2026-05-30 → `context/archive/2026-05-30-analysis-removal/`. Lesson: —.
 - **S-01: upload CV + pick QA profile → see categorized questions + match summary** — Archived 2026-06-06 → `context/archive/2026-05-27-first-gated-generation/`. Lesson: —.
 - **S-02: user can paste custom job requirements as free text (instead of selecting a predefined profile) and optionally enter project-specific context (domain, methodology, tech requirements) to calibrate the analysis.** — Archived 2026-06-06 → `context/archive/2026-06-06-extended-analysis-inputs/`. Lesson: —.
+- **S-03: user can paste LinkedIn profile text or link to enable cross-source contradiction detection — the analysis surfaces discrepancies between CV claims and LinkedIn history.** — Archived 2026-06-06 → `context/archive/2026-06-06-linkedin-cross-reference/`. Lesson: —.
