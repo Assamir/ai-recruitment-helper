@@ -23,5 +23,7 @@
 	"vars": {
 		"E2E_EMAIL": "test-user@example.com",
 		"E2E_PASSWORD": "TestUser-1#",
+		"LLM_PROVIDER": "openrouter",
+		"LLM_MODEL": "openai/gpt-4o",
 	},
 }
