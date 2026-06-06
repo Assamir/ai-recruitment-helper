@@ -7,7 +7,7 @@ interface Question {
   category: string;
   question: string;
   rationale: string;
-  suggested_answer: string;
+  suggested_answer: string | null;
   sort_order: number;
 }
 

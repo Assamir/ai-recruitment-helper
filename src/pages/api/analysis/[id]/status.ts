@@ -25,6 +25,7 @@ export const GET: APIRoute = async (context) => {
     .from("analyses")
     .select("status, match_summary, error_message")
     .eq("id", id)
+    .eq("user_id", context.locals.user.id)
     .single();
 
   if (error) {

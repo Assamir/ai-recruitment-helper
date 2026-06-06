@@ -132,3 +132,31 @@
 - **Detail**: Phases 4 & 5 SHIPPED (commits bee654d, 1764c68) but their Progress checkboxes are still `[ ]` and change.md status is "implementing". QuestionCard.tsx (plan §Phase 5 #5) inlined into AnalysisResults.tsx:105-129 with no category badge. AnalysisProgress shows 3 stages; planned client-side "Generating" 4th stage absent. Anonymizer never emits [ADDRESS]/[LOCATION_N]; `addresses` count always 0 (findDates unwired). Bookkeeping/drift, not defects; automated checks pass.
 - **Fix**: Sync plan Progress + change.md status to reality; decide whether inlined card / 3-stage stepper / address placeholders are accepted scope.
 - **Decision**: FIXED (checked Phase 4 & 5 automated Progress boxes with SHAs bee654d/1764c68; change.md already stamped impl_reviewed). Inlined QuestionCard, 3-stage stepper, and missing [ADDRESS]/[LOCATION] placeholders accepted as scope.
+
+---
+
+## Re-review (2026-06-06)
+
+- **Verdict**: APPROVED
+- **Verification**: lint 0 errors, typecheck 0 errors, 170/170 tests pass (28 files). All F1–F10 fixes confirmed present in committed code — F1 via migration `20260606130000_candidates_update_rls.sql` (commit fa0a6dd) + error-checked `pii_map` write; F2–F9 via commit 52028c4.
+- **Findings**: 0 critical  0 warnings  2 observations (both fixed).
+
+### N1 — GET routes rely on RLS only; DELETE adds explicit user_id guard
+
+- **Severity**: ℹ️ OBSERVATION
+- **Impact**: 🏃 LOW — quick decision; fix is obvious and narrowly scoped
+- **Dimension**: Pattern Consistency
+- **Location**: src/pages/api/analysis/[id]/index.ts (GET) + src/pages/api/analysis/[id]/status.ts
+- **Detail**: GET full-results and status queries scoped only by `.eq("id", id)`, relying entirely on the SELECT RLS policy, while DELETE adds `.eq("user_id", userId)` defense-in-depth. Safe today; inconsistent.
+- **Fix**: Add `.eq("user_id", context.locals.user.id)` to the GET and status queries.
+- **Decision**: FIXED (both queries now scope by user_id to match DELETE).
+
+### N2 — suggested_answer typed non-null in AnalysisView, nullable everywhere else
+
+- **Severity**: ℹ️ OBSERVATION
+- **Impact**: 🏃 LOW — quick decision; fix is obvious and narrowly scoped
+- **Dimension**: Pattern Consistency
+- **Location**: src/components/analysis/AnalysisView.tsx:10
+- **Detail**: AnalysisView's local `Question.suggested_answer` was `string`, while the schema, API payload, and AnalysisResults model it as `string | null`. No runtime bug (guarded downstream), but a type lie.
+- **Fix**: Change to `suggested_answer: string | null`.
+- **Decision**: FIXED.
