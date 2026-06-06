@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { AnalysisProgress } from "./AnalysisProgress";
 import { AnalysisResults } from "./AnalysisResults";
+import ExportReportButton from "./ExportReportButton";
 
 interface Question {
   id: string;
@@ -149,16 +150,19 @@ export default function AnalysisView({ analysisId, initialStatus }: AnalysisView
   }
 
   return (
-    <AnalysisResults
-      questions={results.questions}
-      matchSummary={results.analysis.match_summary}
-      profile={results.profile}
-      customRequirements={results.analysis.custom_requirements}
-      projectContext={results.analysis.project_context}
-      fileName={results.candidate.file_name}
-      createdAt={results.analysis.created_at}
-      hasLinkedin={results.candidate.has_linkedin ?? false}
-      linkedinScrapeNote={results.analysis.linkedin_scrape_note}
-    />
+    <div className="space-y-4">
+      <ExportReportButton analysisId={analysisId} />
+      <AnalysisResults
+        questions={results.questions}
+        matchSummary={results.analysis.match_summary}
+        profile={results.profile}
+        customRequirements={results.analysis.custom_requirements}
+        projectContext={results.analysis.project_context}
+        fileName={results.candidate.file_name}
+        createdAt={results.analysis.created_at}
+        hasLinkedin={results.candidate.has_linkedin ?? false}
+        linkedinScrapeNote={results.analysis.linkedin_scrape_note}
+      />
+    </div>
   );
 }

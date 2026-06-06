@@ -269,17 +269,17 @@ None — no schema changes. Existing CV-only analyses carry `pii_map`; LinkedIn-
 
 #### Automated
 
-- [x] 2.1 Type checking passes: `npm run typecheck`
-- [x] 2.2 Linting passes: `npm run lint`
-- [x] 2.3 Export route returns 401/400/503/404 per isolation contract
-- [x] 2.4 Invalid `format` → 400, non-completed → 409, completed `md` → 200 with headers + redacted body
-- [x] 2.5 Build passes: `npx astro sync && npm run build`
+- [x] 2.1 Type checking passes: `npm run typecheck` — 3b006d3
+- [x] 2.2 Linting passes: `npm run lint` — 3b006d3
+- [x] 2.3 Export route returns 401/400/503/404 per isolation contract — 3b006d3
+- [x] 2.4 Invalid `format` → 400, non-completed → 409, completed `md` → 200 with headers + redacted body — 3b006d3
+- [x] 2.5 Build passes: `npx astro sync && npm run build` — 3b006d3
 
 #### Manual
 
-- [x] 2.6 Authenticated `?format=md` downloads a `.md` with header + anonymized content
-- [x] 2.7 `?format=pdf` renders printable HTML and opens the print dialog
-- [x] 2.8 LinkedIn-path analysis exports with raw name/email redacted
+- [x] 2.6 Authenticated `?format=md` downloads a `.md` with header + anonymized content — 3b006d3
+- [x] 2.7 `?format=pdf` renders printable HTML and opens the print dialog — 3b006d3
+- [x] 2.8 LinkedIn-path analysis exports with raw name/email redacted — 3b006d3
 
 ### Phase 3: Export UI
 
