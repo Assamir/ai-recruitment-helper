@@ -34,7 +34,7 @@ Internal IT recruiters need more than CV summaries — they need audits. The pro
 | S-01 | first-gated-generation | upload CV + pick QA profile → see categorized questions + match summary | F-01, F-02 | US-01, FR-001, FR-002, FR-006, FR-007, FR-008 | done |
 | S-02 | extended-analysis-inputs | paste custom job requirements and project context to enrich analysis | S-01 | FR-003, FR-005 | done |
 | S-03 | linkedin-cross-reference | paste LinkedIn profile to detect contradictions between CV and LinkedIn | S-01 | FR-004 | done |
-| S-04 | report-export | export analysis report as PDF or Markdown | S-01 | FR-009 | proposed |
+| S-04 | report-export | export analysis report as PDF or Markdown | S-01 | FR-009 | done |
 | S-05 | candidate-name-on-card | see the candidate's first and last name on the analysis card | F-01, S-01 | US-01, FR-001 | done |
 | S-06 | analysis-removal | delete a candidate's analysis from the dashboard | F-01, S-01 | US-01, FR-002 | done |
 
@@ -138,7 +138,7 @@ What's already in place in the codebase as of 2026-05-26 (auto-researched + user
 - **Unknowns:**
   - Can PDF generation libraries run on the workerd runtime? — Owner: TBD. Block: no (Markdown export is a safe fallback).
 - **Risk:** PDF generation on workerd may hit the same runtime compatibility concerns as PDF parsing. Markdown export is reliable regardless. Sequenced after S-01 because export only matters once there are results to export.
-- **Status:** proposed
+- **Status:** done
 
 ### S-05: UX Candidate information
 
@@ -192,3 +192,4 @@ What's already in place in the codebase as of 2026-05-26 (auto-researched + user
 - **S-01: upload CV + pick QA profile → see categorized questions + match summary** — Archived 2026-06-06 → `context/archive/2026-05-27-first-gated-generation/`. Lesson: —.
 - **S-02: user can paste custom job requirements as free text (instead of selecting a predefined profile) and optionally enter project-specific context (domain, methodology, tech requirements) to calibrate the analysis.** — Archived 2026-06-06 → `context/archive/2026-06-06-extended-analysis-inputs/`. Lesson: —.
 - **S-03: user can paste LinkedIn profile text or link to enable cross-source contradiction detection — the analysis surfaces discrepancies between CV claims and LinkedIn history.** — Archived 2026-06-06 → `context/archive/2026-06-06-linkedin-cross-reference/`. Lesson: —.
+- **S-04: user can export the analysis report as PDF or Markdown, with anonymized content only and a confidentiality header — the deliverable the recruiter hands to the hiring manager.** — Archived 2026-06-06 → `context/archive/2026-06-06-report-export/`. Lesson: —.
