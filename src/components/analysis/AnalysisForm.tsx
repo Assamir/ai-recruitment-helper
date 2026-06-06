@@ -142,7 +142,8 @@ export default function AnalysisForm({ profiles }: AnalysisFormProps) {
           />
         )}
         <p className="text-xs text-blue-100/40">
-          Use instead of or alongside a profile. At least one of profile or custom requirements is required.
+          Use instead of or alongside a profile. At least one of profile or custom requirements is required. Describe
+          the role only — do not paste candidate personal data here (it is sent to the AI without anonymization).
         </p>
       </div>
 
@@ -168,6 +169,10 @@ export default function AnalysisForm({ profiles }: AnalysisFormProps) {
             className={TEXTAREA_CLASS}
           />
         )}
+        <p className="text-xs text-blue-100/40">
+          Describe the project only — do not paste candidate personal data here (it is sent to the AI without
+          anonymization).
+        </p>
       </div>
 
       {error && (

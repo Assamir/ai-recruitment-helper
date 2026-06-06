@@ -8,7 +8,7 @@ interface Profile {
 interface ProfileSelectorProps {
   profiles: Profile[];
   selectedId: string | null;
-  onChange: (id: string) => void;
+  onChange: (id: string | null) => void;
 }
 
 export function ProfileSelector({ profiles, selectedId, onChange }: ProfileSelectorProps) {
@@ -20,7 +20,7 @@ export function ProfileSelector({ profiles, selectedId, onChange }: ProfileSelec
       <select
         value={selectedId ?? ""}
         onChange={(e) => {
-          onChange(e.target.value);
+          onChange(e.target.value || null);
         }}
         className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white backdrop-blur-md transition-colors focus:border-blue-400/50 focus:ring-1 focus:ring-blue-400/30 focus:outline-none"
       >

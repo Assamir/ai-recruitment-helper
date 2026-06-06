@@ -78,4 +78,52 @@ describe("AnalysisResults", () => {
     expect(screen.getByText("The claim has no measurable outcome.")).toBeInTheDocument();
     expect(screen.queryByText("Suggested answer")).not.toBeInTheDocument();
   });
+
+  it('labels a custom-only analysis "Custom requirements" with a snippet, not "Unknown profile"', () => {
+    render(
+      <AnalysisResults
+        profile={null}
+        customRequirements="Senior QA with k6 and Playwright load-testing experience required."
+        fileName="candidate-cv.pdf"
+        createdAt="2026-01-15T10:00:00.000Z"
+        matchSummary="Summary"
+        questions={[]}
+      />,
+    );
+
+    expect(screen.getByText(/Custom requirements/)).toBeInTheDocument();
+    expect(screen.getByText(/Senior QA with k6 and Playwright load-testing experience required\./)).toBeInTheDocument();
+    expect(screen.queryByText("Unknown profile")).not.toBeInTheDocument();
+  });
+
+  it("surfaces custom requirements alongside the profile name when both are present", () => {
+    render(
+      <AnalysisResults
+        {...baseProps}
+        customRequirements="Must also have GraphQL contract-testing experience."
+        matchSummary="Summary"
+        questions={[]}
+      />,
+    );
+
+    expect(screen.getByText(/Senior QA Engineer.*\+ custom requirements/)).toBeInTheDocument();
+    expect(screen.getByText(/Must also have GraphQL contract-testing experience\./)).toBeInTheDocument();
+  });
+
+  it("surfaces project context when provided", () => {
+    render(
+      <AnalysisResults
+        profile={null}
+        customRequirements="Senior QA engineer."
+        projectContext="FinTech payments domain, Scrum, TypeScript stack."
+        fileName="candidate-cv.pdf"
+        createdAt="2026-01-15T10:00:00.000Z"
+        matchSummary="Summary"
+        questions={[]}
+      />,
+    );
+
+    expect(screen.getByText("Project context:")).toBeInTheDocument();
+    expect(screen.getByText(/FinTech payments domain, Scrum, TypeScript stack\./)).toBeInTheDocument();
+  });
 });

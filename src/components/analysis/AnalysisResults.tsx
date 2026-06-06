@@ -45,14 +45,19 @@ function formatRequirementsLabel(
   profile: Profile | null,
   customRequirements?: string | null,
 ): { label: string; detail?: string } {
+  const snippet = customRequirements
+    ? customRequirements.length > 120
+      ? `${customRequirements.slice(0, 120).trimEnd()}…`
+      : customRequirements
+    : undefined;
+
   if (profile) {
-    return {
-      label: [profile.name, profile.seniority_level].filter(Boolean).join(" — "),
-    };
+    const profileLabel = [profile.name, profile.seniority_level].filter(Boolean).join(" — ");
+    return customRequirements
+      ? { label: `${profileLabel} + custom requirements`, detail: snippet }
+      : { label: profileLabel };
   }
   if (customRequirements) {
-    const snippet =
-      customRequirements.length > 120 ? `${customRequirements.slice(0, 120).trimEnd()}…` : customRequirements;
     return { label: "Custom requirements", detail: snippet };
   }
   return { label: "Unknown profile" };

@@ -8,8 +8,13 @@ vi.mock("@/lib/llm", () => ({
 
 import { POST } from "@/pages/api/analysis/index";
 import { MAX_CV_FILE_BYTES } from "@/lib/cv-parser/index";
+import { MAX_CUSTOM_REQUIREMENTS_CHARS, MAX_PROJECT_CONTEXT_CHARS } from "@/lib/analysis/limits";
 import { makeApiContext } from "../../helpers/api-context";
 import { JOB_PROFILE_ID } from "../../helpers/ids";
+
+const READABLE_CV =
+  "Jane Doe is a senior QA engineer based in Berlin.\n" +
+  "She has eight years of experience with Playwright, Cypress, and k6 load testing.";
 
 const analysesInsert = vi.fn();
 
@@ -23,7 +28,7 @@ vi.mock("@/lib/supabase", () => ({
               single: () => Promise.resolve({ data: { id: "new-analysis-id" }, error: null }),
             }),
           })),
-          update: vi.fn(),
+          update: vi.fn().mockReturnValue({ eq: () => Promise.resolve({ error: null }) }),
         };
       }
       if (table === "candidates") {
@@ -102,5 +107,63 @@ describe("POST /api/analysis — input validation (Risk #7)", () => {
     expect(body.code).toBe("BAD_REQUEST");
     expect(res.status).not.toBe(500);
     expect(analysesInsert).not.toHaveBeenCalled();
+  });
+
+  it("rejects a request with neither profile nor custom requirements (S-02 gate)", async () => {
+    const form = new FormData();
+    form.append("cv_text", READABLE_CV);
+
+    const res = await POST(postContext(form));
+    const body = (await res.json()) as { code?: string; error?: string };
+
+    expect(res.status).toBe(400);
+    expect(body.code).toBe("BAD_REQUEST");
+    expect(body.error).toMatch(/job profile or custom job requirements/i);
+    expect(analysesInsert).not.toHaveBeenCalled();
+  });
+
+  it("rejects over-cap custom_requirements before insert", async () => {
+    const form = new FormData();
+    form.append("custom_requirements", "x".repeat(MAX_CUSTOM_REQUIREMENTS_CHARS + 1));
+    form.append("cv_text", READABLE_CV);
+
+    const res = await POST(postContext(form));
+    const body = (await res.json()) as { code?: string };
+
+    expect(res.status).toBe(400);
+    expect(body.code).toBe("BAD_REQUEST");
+    expect(analysesInsert).not.toHaveBeenCalled();
+  });
+
+  it("rejects over-cap project_context before insert", async () => {
+    const form = new FormData();
+    form.append("custom_requirements", "Senior QA with k6 and Playwright experience.");
+    form.append("project_context", "y".repeat(MAX_PROJECT_CONTEXT_CHARS + 1));
+    form.append("cv_text", READABLE_CV);
+
+    const res = await POST(postContext(form));
+    const body = (await res.json()) as { code?: string };
+
+    expect(res.status).toBe(400);
+    expect(body.code).toBe("BAD_REQUEST");
+    expect(analysesInsert).not.toHaveBeenCalled();
+  });
+
+  it("accepts custom-only (no profile) and persists the new columns on insert", async () => {
+    const form = new FormData();
+    form.append("custom_requirements", "Senior QA with k6 and Playwright experience required.");
+    form.append("project_context", "FinTech payments domain, Scrum, TypeScript stack.");
+    form.append("cv_text", READABLE_CV);
+
+    const res = await POST(postContext(form));
+
+    // The profile-OR-custom gate must accept custom-only and reach the insert.
+    expect(res.status).not.toBe(400);
+    expect(analysesInsert).toHaveBeenCalledTimes(1);
+    expect(analysesInsert.mock.calls[0]?.[0]).toMatchObject({
+      job_profile_id: null,
+      custom_requirements: "Senior QA with k6 and Playwright experience required.",
+      project_context: "FinTech payments domain, Scrum, TypeScript stack.",
+    });
   });
 });
