@@ -194,7 +194,8 @@ export const POST: APIRoute = async (context) => {
 
         const { anonymizedText, piiMap } = anonymizeCV(capturedCvText);
 
-        // Best-effort: persisting pii_map currently no-ops under RLS (see F1).
+        // Persist pii_map for the owning candidate (UPDATE authorized by the
+        // "Users update own candidates" RLS policy).
         const { error: piiError } = await supabase.from("candidates").update({ pii_map: piiMap }).eq("id", candidateId);
         if (piiError) {
           // eslint-disable-next-line no-console -- best-effort PII persistence failure signal
