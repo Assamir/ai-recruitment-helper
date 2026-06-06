@@ -11,9 +11,17 @@ if (!id) {
 
 const supabase = createClient(Astro.request.headers, Astro.cookies);
 
-const initialStatus = supabase
-  ? ((await supabase.from("analyses").select("status").eq("id", id).single()).data?.status ?? "parsing")
-  : "parsing";
+let initialStatus = "parsing";
+if (supabase) {
+  const { data, error } = await supabase.from("analyses").select("status").eq("id", id).single();
+  // RLS-denied and non-existent rows both come back empty — don't render a
+  // fake live-progress UI for analyses the user can't see.
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- generated types model single() as always-present, but RLS denial returns an empty result at runtime
+  if (error || !data) {
+    return Astro.redirect("/dashboard");
+  }
+  initialStatus = data.status;
+}
 ---
 
 <Layout title="Analysis — QA Recruiter">

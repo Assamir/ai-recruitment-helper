@@ -36,6 +36,15 @@ export function AnalysisProgress({ analysisId, onCompleted, onFailed }: Analysis
     async function poll() {
       try {
         const res = await fetch(`/api/analysis/${analysisId}/status`);
+        // 401/404 won't resolve by waiting — the analysis is gone or access
+        // is denied. Fail fast instead of polling until the timeout.
+        if (res.status === 401 || res.status === 404) {
+          const msg = res.status === 401 ? "You are not authorized to view this analysis." : "Analysis not found.";
+          setStatus("failed");
+          setErrorMessage(msg);
+          onFailed(msg);
+          return;
+        }
         if (!res.ok) return;
         const data = (await res.json()) as StatusResponse;
         setStatus(data.status);

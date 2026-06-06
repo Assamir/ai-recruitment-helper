@@ -2,13 +2,14 @@ import type { APIRoute } from "astro";
 import { createClient } from "@/lib/supabase";
 import { jsonResponse } from "@/lib/api/response";
 import { isUuid } from "@/lib/api/uuid";
-import { extractText, CVParseError } from "@/lib/cv-parser/index";
+import { extractText, CVParseError, MAX_CV_TEXT_CHARS } from "@/lib/cv-parser/index";
 import { assertUsableCvText } from "@/lib/cv-parser/quality";
 import { anonymizeCV } from "@/lib/anonymizer/index";
 import { getLLMConfig, createLLMModel, completeLLM } from "@/lib/llm";
 import { AnalysisResponseSchema } from "@/lib/analysis/schema";
 import { QA_ANALYSIS_SYSTEM_PROMPT, buildAnalysisPrompt } from "@/lib/analysis/prompt";
 import { splitFullName, extractCandidateName } from "@/lib/candidate/name";
+import type { TablesUpdate } from "@/db/database.types";
 
 export const POST: APIRoute = async (context) => {
   if (!context.locals.user) {
@@ -83,6 +84,15 @@ export const POST: APIRoute = async (context) => {
     }
   } else if (typeof cvTextField === "string" && cvTextField.trim().length > 0) {
     cvText = cvTextField.trim();
+    if (cvText.length > MAX_CV_TEXT_CHARS) {
+      return jsonResponse(
+        {
+          error: `Pasted CV text exceeds the ${MAX_CV_TEXT_CHARS.toLocaleString()} character limit`,
+          code: "BAD_REQUEST",
+        },
+        400,
+      );
+    }
     fileName = "pasted-cv.txt";
   } else {
     return jsonResponse({ error: "Provide a file, cv_text, or candidate_id", code: "BAD_REQUEST" }, 400);
@@ -158,18 +168,41 @@ export const POST: APIRoute = async (context) => {
   const capturedJobProfileId = jobProfileId;
   const cfCtx = context.locals.cfContext;
 
+  // Without waitUntil the background pipeline can't run; don't leave the row
+  // stuck on "parsing" — mark it failed synchronously and report 503.
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- types declare cfContext as always-present, but it can be absent on misconfigured/non-CF runtimes
+  if (!cfCtx?.waitUntil) {
+    await supabase
+      .from("analyses")
+      .update({ status: "failed", error_message: "Background processing is unavailable" })
+      .eq("id", analysisId);
+    return jsonResponse({ error: "Background processing is unavailable", code: "SERVICE_UNAVAILABLE" }, 503);
+  }
+
   cfCtx.waitUntil(
     (async () => {
+      // Throw on any failed status write so a stuck pipeline surfaces via the
+      // catch path instead of leaving the client polling until timeout.
+      const setStatus = async (fields: TablesUpdate<"analyses">) => {
+        const { error } = await supabase.from("analyses").update(fields).eq("id", analysisId);
+        if (error) throw new Error(`Failed to update analysis status: ${error.message}`);
+      };
+
       try {
         // Stage: anonymizing
-        await supabase.from("analyses").update({ status: "anonymizing" }).eq("id", analysisId);
+        await setStatus({ status: "anonymizing" });
 
         const { anonymizedText, piiMap } = anonymizeCV(capturedCvText);
 
-        await supabase.from("candidates").update({ pii_map: piiMap }).eq("id", candidateId);
+        // Best-effort: persisting pii_map currently no-ops under RLS (see F1).
+        const { error: piiError } = await supabase.from("candidates").update({ pii_map: piiMap }).eq("id", candidateId);
+        if (piiError) {
+          // eslint-disable-next-line no-console -- best-effort PII persistence failure signal
+          console.error(`pii_map write failed for analysis ${analysisId}: ${piiError.message}`);
+        }
 
         // Stage: analyzing
-        await supabase.from("analyses").update({ status: "analyzing" }).eq("id", analysisId);
+        await setStatus({ status: "analyzing" });
 
         const { data: profile } = await supabase
           .from("job_profiles")
@@ -199,21 +232,26 @@ export const POST: APIRoute = async (context) => {
         }));
 
         if (questions.length > 0) {
-          await supabase.from("analysis_questions").insert(questions);
+          const { error: questionsError } = await supabase.from("analysis_questions").insert(questions);
+          if (questionsError) throw new Error(`Failed to write analysis questions: ${questionsError.message}`);
         }
 
-        await supabase
-          .from("analyses")
-          .update({
-            status: "completed",
-            match_summary: llmResult.match_summary,
-            raw_response: JSON.stringify(llmResult),
-            completed_at: new Date().toISOString(),
-          })
-          .eq("id", analysisId);
+        await setStatus({
+          status: "completed",
+          match_summary: llmResult.match_summary,
+          raw_response: JSON.stringify(llmResult),
+          completed_at: new Date().toISOString(),
+        });
       } catch (err) {
         const message = err instanceof Error ? err.message : "Unexpected pipeline error";
-        await supabase.from("analyses").update({ status: "failed", error_message: message }).eq("id", analysisId);
+        const { error: failError } = await supabase
+          .from("analyses")
+          .update({ status: "failed", error_message: message })
+          .eq("id", analysisId);
+        if (failError) {
+          // eslint-disable-next-line no-console -- last-resort signal when the failure write itself fails
+          console.error(`Failed to mark analysis ${analysisId} as failed: ${failError.message} (original: ${message})`);
+        }
       }
     })(),
   );

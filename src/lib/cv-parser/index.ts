@@ -5,6 +5,13 @@ import { extractDocxText } from "./docx";
 /** Matches client cap in FileUpload.tsx (MAX_SIZE_MB = 5). */
 export const MAX_CV_FILE_BYTES = 5 * 1024 * 1024;
 
+/**
+ * Upper bound for raw CV text (pasted or extracted) before it is persisted and
+ * sent to the LLM. The 5 MB file cap bounds uploads; this bounds the paste path,
+ * which would otherwise accept unbounded text.
+ */
+export const MAX_CV_TEXT_CHARS = 200_000;
+
 const EXTRACTORS: Partial<Record<string, (buffer: ArrayBuffer) => Promise<string>>> = {
   "application/pdf": extractPdfText,
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document": extractDocxText,

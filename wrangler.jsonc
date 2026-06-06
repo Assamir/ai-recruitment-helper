@@ -16,4 +16,9 @@
 	"observability": {
 		"enabled": true,
 	},
+	// Playwright E2E test user (tests/e2e/README.md). Synced to Cloudflare on `wrangler deploy`.
+	"vars": {
+		"E2E_EMAIL": "test-user@example.com",
+		"E2E_PASSWORD": "TestUser-1#",
+	},
 }

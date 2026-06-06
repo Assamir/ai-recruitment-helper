@@ -133,6 +133,8 @@ Add two new columns to the database schema (`pii_map` on candidates, `raw_respon
 
 **Contract**: Exports `extractDocxText(buffer: ArrayBuffer): Promise<string>`. Returns plain text with HTML stripped.
 
+> **Addendum (2026-06-06, impl-review):** Implemented with `fflate` + manual `<w:t>` XML extraction instead of `office-oxide-wasm` (workerd-compat fix, commit 24934b9). Decompression is filtered to only `word/document.xml` and capped at `MAX_DOCX_DOCUMENT_BYTES` (20 MB uncompressed) before and after inflation to bound zip-bomb expansion.
+
 #### 7. CV parser error type
 
 **File**: `src/lib/cv-parser/errors.ts`
@@ -629,8 +631,8 @@ Create the analysis results page (`/dashboard/[id]`) with a 4-stage progress ste
 
 #### Automated
 
-- [ ] 4.1 Build succeeds
-- [ ] 4.2 Lint passes
+- [x] 4.1 Build succeeds — bee654d
+- [x] 4.2 Lint passes — bee654d
 
 #### Manual
 
@@ -646,8 +648,8 @@ Create the analysis results page (`/dashboard/[id]`) with a 4-stage progress ste
 
 #### Automated
 
-- [ ] 5.1 Build succeeds
-- [ ] 5.2 Lint passes
+- [x] 5.1 Build succeeds — 1764c68
+- [x] 5.2 Lint passes — 1764c68
 
 #### Manual
 

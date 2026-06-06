@@ -1,19 +1,12 @@
 ---
 name: 10x-test-plan
 description: >
-  Stateful, phased test-rollout orchestrator for existing products. Writes a
-  durable phased rollout document at `context/foundation/test-plan.md`
-  BEFORE handing off, then drives each rollout phase into
-  /10x-new → /10x-research → /10x-plan → /10x-implement. Re-running the
-  skill re-derives state from which artifacts exist and resumes from the
-  next pending rollout phase. Once a rollout change is opened, follow the
-  established research → plan → implement process: after each major phase,
-  suggest the next natural command unless there is a clear blocker.
-  Use when the user says "create test plan", "plan tests", "test
-  strategy", "phased test rollout", "continue test rollout", "risk map
-  for testing", "QA spec", "AI-native testing strategy", "stwórz plan
-  testów", "strategia jakości". Use AFTER /10x-prd and /10x-roadmap.
-  Brownfield only; greenfield needs a PRD first.
+  Stateful, phased test-rollout orchestrator for existing products. Writes
+  context/foundation/test-plan.md, then drives each rollout phase through
+  /10x-new → /10x-research → /10x-plan → /10x-implement; re-running resumes
+  from the next pending phase. Trigger phrases: "create test plan", "test
+  strategy", "phased test rollout", "QA spec", "stwórz plan testów",
+  "strategia jakości". Use AFTER /10x-prd and /10x-roadmap. Brownfield only.
 ---
 
 # 10x Test Plan — Stateful Phased Rollout Orchestrator
@@ -222,7 +215,7 @@ Persist the output as a short note that Phases 2, 3, and 4 consume.
 
 ### Checkpoint
 
-Summarize the inputs back to the user in ≤12 lines: `path → classified-type → 1-line gist → [argument | default]`, plus a 3-line hot-spot recap. Ask the user to confirm before moving to Phase 2.
+Summarize the inputs back to the user in ≤12 lines: `path → classified-type → 1-line gist → [argument | default]`, plus a 3-line hot-spot recap. Confirm before moving to Phase 2.
 
 ## Phase 2 — User Interview (only when the guide is missing)
 
@@ -240,27 +233,27 @@ The user may reply "skip" to any question. If three or more are skipped, abort t
 
 Each question below ships with example answers. Read them to the user as part of the prompt; adapt the examples to the project's domain when an obvious adaptation exists (e.g., for a billing product, use billing-flavoured examples).
 
-1. Ask the user: **"What worries you most about this product breaking — independent of what the docs say?"**
+1. Ask the user: "What worries you most about this product breaking — independent of what the docs say?"
    - e.g., "A paying user gets a 403 and can't reach the content they paid for."
    - e.g., "Webhook from Stripe arrives twice and we double-charge."
    - e.g., "A silent data-loss bug in the import pipeline that nobody notices for a week."
 
-2. Ask the user: **"Where have you been burned before in this codebase, or one like it?"**
+2. Ask the user: "Where have you been burned before in this codebase, or one like it?"
    - e.g., "Last quarter a migration ran fine in staging and corrupted prod rows."
    - e.g., "A refactor of the auth middleware logged users out for 30 minutes."
    - e.g., "We shipped a build where the catalog was missing half the lessons and nobody noticed for a day."
 
-3. Ask the user: **"Which area do you change most often without feeling confident?"**
+3. Ask the user: "Which area do you change most often without feeling confident?"
    - e.g., "The lesson-gating logic — every tweak feels like roulette."
    - e.g., "The Cloudflare Worker routing — works locally, breaks in prod."
    - e.g., "The R2 upload script — I run it and pray."
 
-4. Ask the user: **"What feels under-tested today that you've been quietly worried about?"** *(see conditional rewrite below if the test-base profile is `none`)*
+4. Ask the user: "What feels under-tested today that you've been quietly worried about?" *(see conditional rewrite below if the test-base profile is `none`)*
    - e.g., "The webhook retry path — we have one happy-path test and that's it."
    - e.g., "Error boundaries — they exist but I've never seen them fire in a test."
    - e.g., "Anything that touches money — coverage is light and the impact is severe."
 
-5. Ask the user: **"What would you NOT want test budget spent on, even if a textbook says to test it?"**
+5. Ask the user: "What would you NOT want test budget spent on, even if a textbook says to test it?"
    - e.g., "Internal admin tools — five trusted users, low blast radius."
    - e.g., "Generated TypeScript clients — the generator is the test."
    - e.g., "UI snapshot tests for marketing pages — they break constantly and catch nothing."
@@ -351,7 +344,7 @@ Before showing the brief to the user, walk every top-N risk and apply the QA-con
 
 Both checks fire silently — they're how the brief gets cleaned, not a user-facing step. If a risk is dropped or reframed, note it in a one-line "Challenger findings" subsection at the end of the brief so the user can see what was removed and why.
 
-Show the (cleaned) brief; ask the user for **Accept** / **Edit** / **Cancel**.
+Show the (cleaned) brief; ask for **Accept** / **Edit** / **Cancel**.
 
 ## Phase 4 — Write the phased `test-plan.md` (only when the guide is missing)
 
@@ -405,7 +398,7 @@ Return to `/10x-test-plan` when the test plan itself needs attention: backportin
 
 ### Handoff A — Change folder missing (Status `not started`)
 
-Propose a change-id from the rollout phase name (kebab-case, prefixed `testing-`). E.g., "Critical-path coverage" → `testing-critical-path-coverage`. Ask the user to confirm, then update §3 (Status → `change opened`, Change folder → chosen id) **before** the handoff so resume works if the session dies.
+Propose a change-id from the rollout phase name (kebab-case, prefixed `testing-`). E.g., "Critical-path coverage" → `testing-critical-path-coverage`. Confirm with the user, then update §3 (Status → `change opened`, Change folder → chosen id) **before** the handoff so resume works if the session dies.
 
 Then run the **Handoff Ritual** with:
 
@@ -459,7 +452,6 @@ After `research.md` lands and before presenting Handoff C, read the new research
 3. **Response-guidance corrections** — research verified that the planned response would not catch the failure, picked a cheaper layer, or found the listed "must challenge" assumption was wrong.
 
 If either is present, ask the user:
-
 > Research surfaced corrections to the test plan §2:
 > - [list each finding in one line]
 >
@@ -589,7 +581,7 @@ Triggered when the user invokes `/10x-test-plan --refresh`, or when the guide is
 
 ## Interactive prompts — host-agnostic
 
-Whenever this skill says *"ask the user"*, use whichever interactive-question tool the host exposes (e.g., a tool for asking questions, or a plain conversational message with labelled options). Before the first interactive step, the AI assistant should scan available tools for one with a `question` parameter and an `options`/`choices` field; use the first match. If none exists, fall back to a plain conversational message with labelled options.
+Whenever this skill says *"ask the user"*, use whichever interactive-question tool the host exposes (e.g., `AskUserQuestion`, `ask_question`, `request_user_input`). Before the first interactive step, scan available tools for one with a `question` parameter and an `options`/`choices` field; use the first match. If none exists, fall back to a plain conversational message with labelled options.
 
 ## All phases complete
 
@@ -609,7 +601,7 @@ surfaces, a tool's `checked:` date is > 3 months old, the tech stack changes,
 or §7 negative-space no longer matches what the team believes.
 ```
 
-Then suggest a smoke test: open a fresh agent session and ask "Read the project rules and `context/foundation/test-plan.md`. What should I test first for a new `<area>` endpoint, and why?" The AI assistant should name the cookbook pattern, location, and cheapest test type. If it picks a random file, the rules-file is not pointing at `context/foundation/` yet.
+Then suggest a smoke test: open a fresh agent session and ask "Read the project rules and `context/foundation/test-plan.md`. What should I test first for a new `<area>` endpoint, and why?" The agent should name the cookbook pattern, location, and cheapest test type. If it picks a random file, the rules-file is not pointing at `context/foundation/` yet.
 
 ## What this skill does NOT do
 
