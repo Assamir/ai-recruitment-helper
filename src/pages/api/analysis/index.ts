@@ -8,6 +8,7 @@ import { anonymizeCV } from "@/lib/anonymizer/index";
 import { getLLMConfig, createLLMModel, completeLLM } from "@/lib/llm";
 import { AnalysisResponseSchema } from "@/lib/analysis/schema";
 import { QA_ANALYSIS_SYSTEM_PROMPT, buildAnalysisPrompt } from "@/lib/analysis/prompt";
+import { MAX_CUSTOM_REQUIREMENTS_CHARS, MAX_PROJECT_CONTEXT_CHARS } from "@/lib/analysis/limits";
 import { splitFullName, extractCandidateName } from "@/lib/candidate/name";
 import type { TablesUpdate } from "@/db/database.types";
 
@@ -31,18 +32,54 @@ export const POST: APIRoute = async (context) => {
     return jsonResponse({ error: "Invalid form data", code: "BAD_REQUEST" }, 400);
   }
 
-  const jobProfileId = formData.get("job_profile_id");
+  const jobProfileIdField = formData.get("job_profile_id");
+  const customRequirementsField = formData.get("custom_requirements");
+  const projectContextField = formData.get("project_context");
   const candidateIdField = formData.get("candidate_id");
   const firstNameField = formData.get("first_name");
   const lastNameField = formData.get("last_name");
   const file = formData.get("file");
   const cvTextField = formData.get("cv_text");
 
-  if (!jobProfileId || typeof jobProfileId !== "string") {
-    return jsonResponse({ error: "job_profile_id is required", code: "BAD_REQUEST" }, 400);
-  }
-  if (!isUuid(jobProfileId)) {
+  const jobProfileId =
+    typeof jobProfileIdField === "string" && jobProfileIdField.trim().length > 0 ? jobProfileIdField.trim() : null;
+
+  if (jobProfileId && !isUuid(jobProfileId)) {
     return jsonResponse({ error: "Invalid job_profile_id format", code: "BAD_REQUEST" }, 400);
+  }
+
+  const customRequirements =
+    typeof customRequirementsField === "string" && customRequirementsField.trim().length > 0
+      ? customRequirementsField.trim()
+      : null;
+
+  const projectContext =
+    typeof projectContextField === "string" && projectContextField.trim().length > 0
+      ? projectContextField.trim()
+      : null;
+
+  if (!jobProfileId && !customRequirements) {
+    return jsonResponse({ error: "Provide a job profile or custom job requirements", code: "BAD_REQUEST" }, 400);
+  }
+
+  if (customRequirements && customRequirements.length > MAX_CUSTOM_REQUIREMENTS_CHARS) {
+    return jsonResponse(
+      {
+        error: `Custom job requirements exceed the ${MAX_CUSTOM_REQUIREMENTS_CHARS.toLocaleString()} character limit`,
+        code: "BAD_REQUEST",
+      },
+      400,
+    );
+  }
+
+  if (projectContext && projectContext.length > MAX_PROJECT_CONTEXT_CHARS) {
+    return jsonResponse(
+      {
+        error: `Project context exceeds the ${MAX_PROJECT_CONTEXT_CHARS.toLocaleString()} character limit`,
+        code: "BAD_REQUEST",
+      },
+      400,
+    );
   }
 
   // ── CV text extraction (synchronous front-half) ──────────────────────────
@@ -141,6 +178,8 @@ export const POST: APIRoute = async (context) => {
       user_id: userId,
       candidate_id: candidateId,
       job_profile_id: jobProfileId,
+      custom_requirements: customRequirements,
+      project_context: projectContext,
       status: "parsing",
     })
     .select("id")
@@ -166,6 +205,8 @@ export const POST: APIRoute = async (context) => {
   // ── Background pipeline via waitUntil ────────────────────────────────────
   const capturedCvText = cvText;
   const capturedJobProfileId = jobProfileId;
+  const capturedCustomRequirements = customRequirements;
+  const capturedProjectContext = projectContext;
   const cfCtx = context.locals.cfContext;
 
   // Without waitUntil the background pipeline can't run; don't leave the row
@@ -205,15 +246,25 @@ export const POST: APIRoute = async (context) => {
         // Stage: analyzing
         await setStatus({ status: "analyzing" });
 
-        const { data: profile } = await supabase
-          .from("job_profiles")
-          .select("name, description, expected_skills")
-          .eq("id", capturedJobProfileId)
-          .single();
+        let profile: { name: string; description: string; expected_skills: unknown } | null = null;
 
-        if (!profile) throw new Error("Job profile not found");
+        if (capturedJobProfileId) {
+          const { data: profileRow } = await supabase
+            .from("job_profiles")
+            .select("name, description, expected_skills")
+            .eq("id", capturedJobProfileId)
+            .single();
 
-        const userPrompt = buildAnalysisPrompt(anonymizedText, profile);
+          if (!profileRow) throw new Error("Job profile not found");
+          profile = profileRow;
+        }
+
+        const userPrompt = buildAnalysisPrompt({
+          anonymizedText,
+          profile,
+          customRequirements: capturedCustomRequirements,
+          projectContext: capturedProjectContext,
+        });
 
         const { data: llmResult } = await completeLLM({
           model: llmModel,
