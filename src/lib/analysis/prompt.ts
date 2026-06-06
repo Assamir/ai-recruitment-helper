@@ -1,4 +1,6 @@
-export const QA_ANALYSIS_SYSTEM_PROMPT = `You are an expert QA recruitment analyst. Your task is to analyze a candidate's CV against a specific QA job profile and generate insightful interview questions.
+export const QA_ANALYSIS_SYSTEM_PROMPT = `You are an expert QA recruitment analyst. Your task is to analyze a candidate's CV against job requirements and generate insightful interview questions.
+
+Job requirements may be provided as a predefined QA profile, custom free-text requirements, or both (profile as scaffold, custom as override). Optional project context (domain, methodology, tech stack) may also be supplied to calibrate relevance — use it to weight which gaps and strengths matter most, but still reference ONLY information present in the CV.
 
 ANOMALY CATEGORIES:
 - missing_elements: Skills, experience, or certifications expected for the role but absent from the CV
@@ -29,23 +31,51 @@ Respond with a single valid JSON object. No markdown, no explanation outside the
   ]
 }`;
 
-export function buildAnalysisPrompt(
-  anonymizedText: string,
-  profile: { name: string; description: string; expected_skills: unknown },
-): string {
-  const skillsJson =
-    typeof profile.expected_skills === "string"
-      ? profile.expected_skills
-      : JSON.stringify(profile.expected_skills, null, 2);
+interface AnalysisProfile {
+  name: string;
+  description: string;
+  expected_skills: unknown;
+}
 
-  return `Analyze the following CV against the provided QA job profile. Generate interview questions following the system instructions.
+export function buildAnalysisPrompt(input: {
+  anonymizedText: string;
+  profile?: AnalysisProfile | null;
+  customRequirements?: string | null;
+  projectContext?: string | null;
+}): string {
+  const sections: string[] = [
+    "Analyze the following CV against the provided job requirements. Generate interview questions following the system instructions.",
+    "",
+  ];
 
-JOB PROFILE: ${profile.name}
-${profile.description}
+  if (input.profile) {
+    const skillsJson =
+      typeof input.profile.expected_skills === "string"
+        ? input.profile.expected_skills
+        : JSON.stringify(input.profile.expected_skills, null, 2);
 
-EXPECTED SKILLS:
-${skillsJson}
+    sections.push(`JOB PROFILE: ${input.profile.name}`);
+    sections.push(input.profile.description);
+    sections.push("");
+    sections.push("EXPECTED SKILLS:");
+    sections.push(skillsJson);
+    sections.push("");
+  }
 
-CV (anonymized):
-${anonymizedText}`;
+  if (input.customRequirements) {
+    sections.push("CUSTOM JOB REQUIREMENTS:");
+    sections.push(input.customRequirements);
+    sections.push("");
+  }
+
+  if (input.projectContext) {
+    sections.push("PROJECT CONTEXT:");
+    sections.push(input.projectContext);
+    sections.push("");
+  }
+
+  sections.push("CV (anonymized):");
+  sections.push(input.anonymizedText);
+
+  return sections.join("\n");
 }

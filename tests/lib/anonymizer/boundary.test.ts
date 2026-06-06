@@ -9,11 +9,19 @@ const SYNTHETIC_PROFILE = {
   expected_skills: ["Playwright", "API testing"],
 };
 
+const SYNTHETIC_CUSTOM_REQUIREMENTS = "Requires ISTQB Foundation and 5+ years in regulated industries.";
+const SYNTHETIC_PROJECT_CONTEXT = "Healthcare SaaS, SAFe agile, Azure cloud stack.";
+
 describe("anonymizeCV → buildAnalysisPrompt boundary", () => {
   for (const fixture of CATCHABLE_CV_FIXTURES) {
     it(`[${fixture.id}] prompt has placeholders and zero raw catchable PII`, () => {
       const { anonymizedText } = anonymizeCV(fixture.cv);
-      const prompt = buildAnalysisPrompt(anonymizedText, SYNTHETIC_PROFILE);
+      const prompt = buildAnalysisPrompt({
+        anonymizedText,
+        profile: SYNTHETIC_PROFILE,
+        customRequirements: SYNTHETIC_CUSTOM_REQUIREMENTS,
+        projectContext: SYNTHETIC_PROJECT_CONTEXT,
+      });
 
       for (const placeholder of fixture.expectedPlaceholders) {
         expect(prompt).toContain(placeholder);
