@@ -45,10 +45,15 @@ jobs:
           name: dist
           path: dist/
       - name: Deploy to Cloudflare Workers
-        run: npx wrangler deploy -c dist/server/wrangler.json
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::warning::CLOUDFLARE_API_TOKEN is not set — skipping deploy. Add the secret to enable production deploys."
+            exit 0
+          fi
+          npx wrangler deploy -c dist/server/wrangler.json
 
   preview:
     needs: lint-build
@@ -66,7 +71,12 @@ jobs:
           name: dist
           path: dist/
       - name: Upload preview Worker version
-        run: npx wrangler versions upload -c dist/server/wrangler.json
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::warning::CLOUDFLARE_API_TOKEN is not set — skipping preview upload. Add the secret to enable PR previews."
+            exit 0
+          fi
+          npx wrangler versions upload -c dist/server/wrangler.json
