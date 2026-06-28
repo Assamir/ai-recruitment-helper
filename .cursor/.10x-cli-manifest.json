@@ -1,9 +1,9 @@
 {
   "package": "@przeprogramowani/10x-cli",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "manifestVersion": 3,
-  "lastApplied": "2026-06-06T09:11:19.954Z",
-  "lessonId": "m3l5",
+  "lastApplied": "2026-06-27T17:05:41.696Z",
+  "lessonId": "m5l1",
   "course": "10xdevs3",
   "tool": "cursor",
   "files": {
@@ -239,6 +239,22 @@
           "references/seed-test-pattern.md": "90fa8778a557d0c88320e839c6a8879735b3390b68ed89b3487258f2562b2f80",
           "SKILL.md": "12237dffd5b9f6efb104284ebb377aad029f44d39d3ecdad79a8b502c7d54bda"
         }
+      },
+      "10x-opportunity-map": {
+        "files": [
+          "SKILL.md"
+        ],
+        "contentHashes": {
+          "SKILL.md": "ea554afefdc2ee755c332cf76769c68bb942c597441ec0c422259ef898f2b353"
+        }
+      },
+      "10x-mom-test": {
+        "files": [
+          "SKILL.md"
+        ],
+        "contentHashes": {
+          "SKILL.md": "6b50b17ee0906b01a2bd12d858bab3691fa395d425d0bfeea817c1c78c4f2f88"
+        }
       }
     },
     "prompts": [
@@ -247,7 +263,11 @@
       "m1l5-2-constrain-approach.md",
       "m1l5-3-extend-prerequisites.md",
       "m1l5-4-store-plan.md",
-      "m3l2-ad-hoc-testing.md"
+      "m3l2-ad-hoc-testing.md",
+      "m4l2-1-territory-git-history.md",
+      "m4l2-2-structure-dependency-cruiser.md",
+      "m4l2-3-contributors-git.md",
+      "m4l2-repo-map-synthesis.md"
     ],
     "configs": [],
     "promptHashes": {
@@ -256,7 +276,11 @@
       "m1l5-2-constrain-approach.md": "b6c16b551c7f07996c2800c3f9b2f2a60929059425a35608c1ceca5966ee44ef",
       "m1l5-3-extend-prerequisites.md": "d7e20964986be981a46b63346e3623b2f03deff8970dfbc4d60b89d657788e80",
       "m1l5-4-store-plan.md": "adcc1fc02f2943618fc3c190323b1eef44039727632117acaf4791175dc09c44",
-      "m3l2-ad-hoc-testing.md": "6a4509b6b90d3ea9229d19dbec77aea0c6812d0d706144006f9465e195f5387f"
+      "m3l2-ad-hoc-testing.md": "6a4509b6b90d3ea9229d19dbec77aea0c6812d0d706144006f9465e195f5387f",
+      "m4l2-1-territory-git-history.md": "b091036f132cd84d7183f45b4c605b03a38689020f22ad4cbdc188e0b8b705f6",
+      "m4l2-2-structure-dependency-cruiser.md": "232a5f4fdef77abca785142a9ad2e798835f38ac9f27b90a731260db95ad3ded",
+      "m4l2-3-contributors-git.md": "8f318f946f5671678938cc64bc2b25270115b650e17454381f520ea2c3cf7d51",
+      "m4l2-repo-map-synthesis.md": "338042d637f695a528e273a9e283f17228a684e41f98cb03ff3d5325f794bc94"
     }
   },
   "lessons": {
@@ -1118,6 +1142,34 @@
         "m1l5-4-store-plan.md",
         "m3l2-ad-hoc-testing.md"
       ],
+      "configs": []
+    },
+    "m4l2": {
+      "appliedAt": "2026-06-10T18:32:40.836Z",
+      "skills": {},
+      "prompts": [
+        "m4l2-1-territory-git-history.md",
+        "m4l2-2-structure-dependency-cruiser.md",
+        "m4l2-3-contributors-git.md",
+        "m4l2-repo-map-synthesis.md"
+      ],
+      "configs": []
+    },
+    "m5l1": {
+      "appliedAt": "2026-06-27T17:05:41.695Z",
+      "skills": {
+        "10x-opportunity-map": {
+          "files": [
+            "SKILL.md"
+          ]
+        },
+        "10x-mom-test": {
+          "files": [
+            "SKILL.md"
+          ]
+        }
+      },
+      "prompts": [],
       "configs": []
     }
   }
