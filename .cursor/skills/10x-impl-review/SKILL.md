@@ -247,8 +247,7 @@ Plain text, box-drawing. PASS dimensions appear only in the verdicts table, neve
 - **Impact always carries its one-line meaning** (copy from the Impact table — "architectural stakes; think carefully before deciding" / "real tradeoff; pause to reason through it" / "quick decision; fix is obvious and narrowly scoped"). This makes LOW/MEDIUM/HIGH self-explanatory at the point of use instead of relying on the user to remember the table.
 - Severity, Impact, Dimension, Location are each on their own line with aligned labels. Detail starts on its own line under a `Detail:` label so it can wrap naturally.
 
-After the report, ask the user:
-
+After the report, Ask the user:
 ```
 question: "Review complete. How would you like to proceed?"
 header: "Implementation Review — [N] findings"
@@ -264,7 +263,7 @@ multiSelect: false
 
 ### Saving the report
 
-Save to `context/changes/<change-id>/reviews/impl-review.md` (or `context/changes/<change-id>/reviews/impl-review-phase-N.md` for a phase-scoped review). Update `change.md`: set `status: impl_reviewed` and `updated: <today>`. If the user opts to triage, queue any "fix in plan/code" follow-ups into `context/changes/<change-id>/follow-ups/review-fixes.md`.
+Save to `context/changes/<change-id>/reviews/impl-review.md` (or `context/changes/<change-id>/reviews/impl-review-phase-N.md` for a phase-scoped review). Edit `change.md`: set `status: impl_reviewed` and `updated: <today>`. If the user opts to triage, queue any "fix in plan/code" follow-ups into `context/changes/<change-id>/follow-ups/review-fixes.md`.
 
 ```markdown
 <!-- IMPL-REVIEW-REPORT -->
@@ -385,9 +384,9 @@ multiSelect: false
 ```
 
 **Handling responses:**
-- **Apply Fix A/B / Fix now**: show the exact before/after code change. Ask for confirmation ("Apply this?"), then perform the edit. Mark FIXED (record which option, e.g. "Fixed via Fix A").
-- **Fix differently**: Ask the user for the preferred approach, perform the edit, mark FIXED.
-- **Record as lesson**: pre-fill four lessons-entry fields directly from the finding — `Context` from the finding's Location, `Problem` from the finding's Detail, `Rule` and `Applies to` left as empty placeholders for the user to fill. Show the proposed entry as a complete markdown block and ask the user to edit / confirm via Ask the user: ("Approve this entry?" / "Edit before saving" / "Cancel"). On confirm, append the entry as a new H2 section to `context/foundation/lessons.md` — if the file does not exist, create it first with this canonical 5-line header (no separate template file; the header is embedded inline here):
+- **Apply Fix A/B / Fix now**: show the exact before/after code change. Brief confirmation ("Apply this?"), then edit the file. Mark FIXED (record which option, e.g. "Fixed via Fix A").
+- **Fix differently**: Ask the user for the preferred approach, apply the edit, mark FIXED.
+- **Record as lesson**: pre-fill four lessons-entry fields directly from the finding — `Context` from the finding's Location, `Problem` from the finding's Detail, `Rule` and `Applies to` left as empty placeholders for the user to fill. Show the proposed entry as a complete markdown block and Ask the user to edit / confirm via Ask the user: ("Approve this entry?" / "Edit before saving" / "Cancel"). On confirm, append the entry as a new H2 section to `context/foundation/lessons.md` — if the file does not exist, create it first with this canonical 5-line header (no separate template file; the header is embedded inline here):
 
   ```
   # Lessons Learned
@@ -396,9 +395,9 @@ multiSelect: false
 
   ```
 
-  The pre-fill-then-confirm flow is the load-bearing UX detail; the user must see the full proposed entry with the pre-filled Context/Problem and have a chance to edit Rule and Applies-to before append. After the append succeeds, **always** ask a follow-up via Ask the user: "Lesson saved. Also apply the fix to the current code?" with options "Yes — fix now" / "No — lesson only". **Never skip this question or decide on the user's behalf** — whether the fix is trivial, out of scope, or spans many files, the decision belongs to the user. If yes: show the before/after code change, perform the edit, mark `FIXED + ACCEPTED-AS-RULE: <rule title>`. If no: mark `ACCEPTED-AS-RULE: <rule title>` (finding stays unfixed, rule is recorded for future work).
+  The pre-fill-then-confirm flow is the load-bearing UX detail; the user must see the full proposed entry with the pre-filled Context/Problem and have a chance to edit Rule and Applies-to before append. After the append succeeds, **always** Ask the user a follow-up via Ask the user: "Lesson saved. Also apply the fix to the current code?" with options "Yes — fix now" / "No — lesson only". **Never skip this question or decide on the user's behalf** — whether the fix is trivial, out of scope, or spans many files, the decision belongs to the user. If yes: show the before/after code change, apply the edit, mark `FIXED + ACCEPTED-AS-RULE: <rule title>`. If no: mark `ACCEPTED-AS-RULE: <rule title>` (finding stays unfixed, rule is recorded for future work).
 - **Skip** → SKIPPED. Move on, don't argue.
-- **Other (free text)**: interpret the user's intent. Common intents: "fix differently" (especially in dual-fix context) → Ask the user for the preferred approach, perform the edit, mark FIXED; "accept risk" → mark ACCEPTED with the user's justification; "dismiss"/"disagree" → mark DISMISSED.
+- **Other (free text)**: interpret the user's intent. Common intents: "fix differently" (especially in dual-fix context) → Ask the user for the preferred approach, apply the edit, mark FIXED; "accept risk" → mark ACCEPTED with the user's justification; "dismiss"/"disagree" → mark DISMISSED.
 
 After each decision, if working from a saved file, update its `Decision:` field.
 

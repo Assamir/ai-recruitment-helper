@@ -162,18 +162,18 @@ Do a quick search for an existing spec covering this risk. If a **passing** E2E 
 
 - If all three hold, state that in one line and proceed to the plan → generate → review → verify loop.
 - If the risk is **clearly not browser-level**, run the **redirect** (below).
-- If it's **mixed or ambiguous** (e.g., a phase that's partly an endpoint contract, partly a rendered-UI flow), Ask the user: "Phase [N] mixes an isolated-function risk and a browser-level flow. How should I drive it?" with the following options:
-    - "E2E the browser-level part (Recommended)": "I'll plan→generate→review→verify the cross-boundary flow and redirect the isolated-function part to /10x-tdd."
-    - "Redirect whole phase to /10x-tdd": "Hand the entire phase off — copy the resume command to the clipboard."
-    - "E2E the whole phase anyway": "Force browser-level coverage even for the parts a unit test would prove. Slower, more brittle."
+- If it's **mixed or ambiguous** (e.g., a phase that's partly an endpoint contract, partly a rendered-UI flow), Ask the user: "Phase [N] mixes an isolated-function risk and a browser-level flow. How should I drive it?"
+    - Option 1: "E2E the browser-level part (Recommended)" (I'll plan→generate→review→verify the cross-boundary flow and redirect the isolated-function part to /10x-tdd.)
+    - Option 2: "Redirect whole phase to /10x-tdd" (Hand the entire phase off — copy the resume command to the clipboard.)
+    - Option 3: "E2E the whole phase anyway" (Force browser-level coverage even for the parts a unit test would prove. Slower, more brittle.)
 
 ### Redirect a non-E2E phase
 
-State *why* the phase isn't a browser-level fit (one or two sentences, grounded in the table above), then Ask the user: "Phase [N] isn't a good E2E fit. How do you want to handle it?" with the following options:
-    - "Hand off to /10x-tdd (Recommended)": "Copy `/10x-tdd <change-id> phase N` to the clipboard. Clear context, run it, then resume E2E on the next phase."
-    - "Hand off to /10x-implement": "Copy `/10x-implement <change-id> phase N` to the clipboard if test-first doesn't fit either."
-    - "E2E inline here anyway": "I'll generate a browser-level test despite the cost — then continue to the next phase's gate."
-    - "Skip — already done": "Mark the phase's Progress rows and move to the next phase."
+State *why* the phase isn't a browser-level fit (one or two sentences, grounded in the table above), then Ask the user: "Phase [N] isn't a good E2E fit. How do you want to handle it?"
+  - Option 1: "Hand off to /10x-tdd (Recommended)" (Copy `/10x-tdd <change-id> phase N` to the clipboard. Clear context, run it, then resume E2E on the next phase.)
+  - Option 2: "Hand off to /10x-implement" (Copy `/10x-implement <change-id> phase N` to the clipboard if test-first doesn't fit either.)
+  - Option 3: "E2E inline here anyway" (I'll generate a browser-level test despite the cost — then continue to the next phase's gate.)
+  - Option 4: "Skip — already done" (Mark the phase's Progress rows and move to the next phase.)
 
 **On "Hand off":** copy the chosen resume command to the clipboard, print the block below, and STOP — the other skill will flip this phase's Progress rows and run its own commit ritual. Tell the user to resume E2E afterward.
 
@@ -265,7 +265,7 @@ Let me know when manual testing is complete so I can commit.
 
 6. **Propose a Conventional-Commits message** and Ask the user to approve it (approve as proposed / edit subject / override). Subject: `test(<change-id>): <phase title> (p<N>)`. Mention the E2E/browser-level nature and the risk protected in the body. Include a `Refs:` line if the conversation contains real Jira/Linear/GitHub references (never invent them from the change-id or branch).
 
-7. **Commit** via a single `git commit` with a heredoc body, per the global commit-message protocol: the approved subject line, then a short body listing the specs added + the risk each protects (and the `Refs:` line when applicable), then the `Co-Authored-By` trailer the protocol mandates. Never pass `--no-verify` / `--amend` / signing-bypass flags. If a pre-commit hook fails, fix the cause and make a NEW commit.
+7. **Commit** via a single `git commit` with a heredoc body, per the global commit-message protocol: the approved subject line, then a short body listing the specs added + the risk each protects (and the `Refs:` line when applicable). Never pass `--no-verify` / `--amend` / signing-bypass flags. If a pre-commit hook fails, fix the cause and make a NEW commit.
 
 8. **Capture and write back the SHA.** `git rev-parse --short HEAD` → `SHA`. For every Progress row flipped this phase, modify `- [x] N.M <title>` → `- [x] N.M <title> — <SHA>` (skip rows that already carry a SHA; if `SHA=""`, skip — `/10x-archive` surfaces SHA-less rows as informational warnings).
 
@@ -275,10 +275,10 @@ Let me know when manual testing is complete so I can commit.
 
 ### Next-phase decision
 
-Ask the user: "Phase [N] complete (E2E). How to proceed?" with the following options:
-    - "Continue to Phase [N+1]": "Stay in this context; run the E2E gate for the next phase and proceed."
-    - "Clear context first": "Copy the resume command to the clipboard. Start fresh for Phase [N+1]."
-    - "Review this phase first": "Run /10x-impl-review to verify the implementation against the plan before continuing."
+Ask the user: "Phase [N] complete (E2E). How to proceed?"
+  - Option 1: "Continue to Phase [N+1]" (Stay in this context; run the E2E gate for the next phase and proceed.)
+  - Option 2: "Clear context first" (Copy the resume command to the clipboard. Start fresh for Phase [N+1].)
+  - Option 3: "Review this phase first" (Run /10x-impl-review to verify the implementation against the plan before continuing.)
 
 **Continue:** read the next phase, set its task `in_progress`, run the E2E gate, proceed. No need to re-read the whole plan.
 

@@ -19,7 +19,7 @@ Plan path: `$ARGUMENTS`
 
 ## What this skill assumes — and what it will not do
 
-- **Test infrastructure already exists.** A runner (Vitest / Playwright / Jest / pytest / …), a way to run a single file, and the project's test conventions are assumed to be in place. This skill **discovers** them; it will **not** install a runner, scaffold configs, create fixtures, or wire up CI. If no runner exists at all, stop and tell the user to set one up first (point them at `/10x-test-plan` for a phased test rollout, or `/10x-bootstrapper` for scaffolding).
+- **Test infrastructure already exists.** A runner (Vitest / Playwright / Jest / pytest / …), a way to run a single file, and the project's test conventions are assumed to be in place. This skill **discovers** them; it does **not** install a runner, scaffold configs, create fixtures, or wire up CI. If no runner exists at all, stop and tell the user to set one up first (point them at `/10x-test-plan` for a phased test rollout, or `/10x-bootstrapper` for scaffolding).
 - **Production implementation is not there yet.** TDD only works when the failing test can lead the implementation. If the phase's relevant behavior, endpoint, component, migration, wiring, or other production change already exists, stop immediately; do not write retroactive tests and do not continue the phase under a TDD label. Tell the user to use `/10x-implement <change-id> phase N` to proceed with the already-started phase.
 - **It drives implementation, not just test scaffolding.** Unlike the old "write all the tests up front" flow, this skill writes a small failing test, then immediately makes it green, phase by phase. There is no separate batch of orphaned failing tests.
 - **It gates every phase on whether test-first actually fits and whether implementation is absent.** Some phases (config, scaffolding, visual polish, infra wiring) cannot be meaningfully driven by a failing test. Already-started implementation also cannot be recovered into true TDD. Those cases are redirected or stopped as described below.
@@ -137,20 +137,14 @@ After confirming the implementation is absent, decide whether the phase can be *
 
 - If the implementation is absent and the phase is **clearly TDD'able**, state that in one line and proceed to the red-green-refactor loop.
 - If the phase is **clearly not TDD'able**, run the **redirect** (below).
-- If it's **mixed or ambiguous** (e.g., a phase that scaffolds a config *and* adds a validator with real logic), ask the user:
-
-  - Ask the user: "Phase [N] is partly scaffolding, partly logic. How should I drive it?"
-    Options:
-    - "TDD the testable part (Recommended)": "I'll red-green-refactor the [logic] and implement the scaffolding inline as plain steps."
-    - "Redirect whole phase to /10x-implement": "Hand the entire phase off — copy the resume command to the clipboard."
-    - "TDD the whole phase anyway": "Force test-first even for the thin parts. May produce low-value tests."
+- If it's **mixed or ambiguous** (e.g., a phase that scaffolds a config *and* adds a validator with real logic), ask the user: "Phase [N] is partly scaffolding, partly logic. How should I drive it?" with options:
+  - "TDD the testable part (Recommended)": "I'll red-green-refactor the [logic] and implement the scaffolding inline as plain steps."
+  - "Redirect whole phase to /10x-implement": "Hand the entire phase off — copy the resume command to the clipboard."
+  - "TDD the whole phase anyway": "Force test-first even for the thin parts. May produce low-value tests."
 
 ### Redirect a non-TDD'able phase to `/10x-implement`
 
-State *why* the phase isn't a fit (one or two sentences, grounded in the table above), then ask the user:
-
-- Ask the user: "Phase [N] isn't a good test-first fit. How do you want to handle it?"
-  Options:
+State *why* the phase isn't a fit (one or two sentences, grounded in the table above), then ask the user: "Phase [N] isn't a good test-first fit. How do you want to handle it?" with options:
   - "Hand off to /10x-implement (Recommended)": "Copy `/10x-implement <change-id> phase N` to the clipboard. Clear context, run it, then resume TDD on the next phase."
   - "Implement inline here (no test-first)": "I'll build this phase directly from the plan and run its success criteria — then continue to the next phase's gate."
   - "Skip — already done": "Mark the phase's Progress rows and move to the next phase."
@@ -235,13 +229,13 @@ Let me know when manual testing is complete so I can commit.
 
 4. **Stage explicitly by path** — `git add` each file in the touched set by name. Never `git add -A` / `git add .`.
 
-5. **Empty diff check.** Run `git diff --cached --quiet`; if exit 0, print that the phase had no diff (rows stay SHA-less), set `SHA=""`, and skip to step 8.
+5. **Empty diff check.** `git diff --cached --quiet`; if exit 0, print that the phase had no diff (rows stay SHA-less), set `SHA=""`, and skip to step 8.
 
 6. **Propose a Conventional-Commits message** and ask the user to approve it (approve as proposed / edit subject / override). Subject: `<type>(<change-id>): <phase title> (p<N>)`. For TDD'd phases, prefer `test`/`feat` and mention the test-first nature in the body. Include a `Refs:` line if the conversation contains real Jira/Linear/GitHub references (never invent them from the change-id or branch).
 
-7. **Commit** via a single `git commit` with a heredoc body, per the global commit-message protocol: the approved subject line, then a short body listing the tests added + production code touched (and the `Refs:` line when applicable), then the `Co-Authored-By` trailer the protocol mandates. Never pass `--no-verify` / `--amend` / signing-bypass flags. If a pre-commit hook fails, fix the cause and make a NEW commit.
+7. **Commit** via a single `git commit` with a heredoc body, per the global commit-message protocol: the approved subject line, then a short body listing the tests added + production code touched (and the `Refs:` line when applicable). Never pass `--no-verify` / `--amend` / signing-bypass flags. If a pre-commit hook fails, fix the cause and make a NEW commit.
 
-8. **Capture and write back the SHA.** Run `git rev-parse --short HEAD` to get the `SHA`. For every Progress row flipped this phase, modify the file to change `- [x] N.M <title>` → `- [x] N.M <title> — <SHA>` (skip rows that already carry a SHA; if `SHA=""`, skip — `/10x-archive` surfaces SHA-less rows as informational warnings).
+8. **Capture and write back the SHA.** `git rev-parse --short HEAD` → `SHA`. For every Progress row flipped this phase, modify `- [x] N.M <title>` → `- [x] N.M <title> — <SHA>` (skip rows that already carry a SHA; if `SHA=""`, skip — `/10x-archive` surfaces SHA-less rows as informational warnings).
 
 9. **Update `change.md`**: `updated: <today>`; keep `status: implementing` until the final phase.
 
@@ -249,10 +243,7 @@ Let me know when manual testing is complete so I can commit.
 
 ### Next-phase decision
 
-Ask the user:
-
-- Ask the user: "Phase [N] complete (test-first). How to proceed?"
-  Options:
+Ask the user: "Phase [N] complete (test-first). How to proceed?" with options:
   - "Continue to Phase [N+1]": "Stay in this context; run the TDD-ability gate for the next phase and proceed."
   - "Clear context first": "Copy the resume command to the clipboard. Start fresh for Phase [N+1]."
   - "Review this phase first": "Run /10x-impl-review to verify the implementation against the plan before continuing."
@@ -344,4 +335,4 @@ Follow the convention discovered in Setup. Defaults if none exists:
 
 ### If you get stuck
 
-Use sub-tasks sparingly — explore for fast file/pattern search, general-purpose for multi-step analysis of unfamiliar territory. First make sure you've read the relevant code; consider that the codebase may have evolved since the plan was written.
+Use sub-tasks sparingly — `Explore` for fast file/pattern search, `general-purpose` for multi-step analysis of unfamiliar territory. First make sure you've read the relevant code; consider that the codebase may have evolved since the plan was written.

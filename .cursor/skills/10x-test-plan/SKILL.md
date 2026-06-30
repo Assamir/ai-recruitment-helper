@@ -344,7 +344,7 @@ Before showing the brief to the user, walk every top-N risk and apply the QA-con
 
 Both checks fire silently — they're how the brief gets cleaned, not a user-facing step. If a risk is dropped or reframed, note it in a one-line "Challenger findings" subsection at the end of the brief so the user can see what was removed and why.
 
-Show the (cleaned) brief; ask for **Accept** / **Edit** / **Cancel**.
+Show the (cleaned) brief; ask the user for **Accept** / **Edit** / **Cancel**.
 
 ## Phase 4 — Write the phased `test-plan.md` (only when the guide is missing)
 
