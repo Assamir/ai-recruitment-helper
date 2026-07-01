@@ -32,6 +32,8 @@ jobs:
       contents: write
       pull-requests: write
       statuses: write
+      # Required by claude-code-action@v1 to fetch an OIDC token.
+      id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
