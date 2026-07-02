@@ -4,9 +4,9 @@
 - **Plan**: `context/changes/demo-impl-review/plan.md`
 - **Scope**: Full plan (CI review on PR #9)
 - **Date**: 2026-07-02
-- **CI run**: https://github.com/Assamir/ai-recruitment-helper/actions/runs/28545946262
-- **Verdict**: NEEDS ATTENTION
-- **Findings**: 0 critical, 1 warning, 0 observations
+- **CI run**: https://github.com/Assamir/ai-recruitment-helper/actions/runs/28615226405
+- **Verdict**: APPROVED
+- **Findings**: 0 critical, 0 warnings, 0 observations
 
 ## Verdicts
 
@@ -18,50 +18,48 @@
 | Architecture | PASS |
 | Pattern Consistency | PASS |
 | Test Coverage | PASS |
-| Success Criteria | FAIL |
+| Success Criteria | PASS |
 
 ## Summary
 
-The implementation faithfully realizes the plan: a single new test file
-`tests/lib/export/format.test.ts` exercises both untested pure helpers
-(`exportFilenameStem`, `formatCreatedDate`), imports them from
-`@/lib/export/format` as required, and covers all three behaviors the plan
-enumerated (filename stem construction, UTC derivation from a non-UTC offset,
-and the `YYYY-MM-DD` UTC slice) plus one benign extra case. No production code
-was modified and every exclusion in "What We're NOT Doing" is respected.
+The PR implements the plan faithfully. The sole planned artifact,
+`tests/lib/export/format.test.ts`, exists and covers every scenario the plan
+committed to:
 
-The one problem is a **Success Criteria** miss: the plan's Automated
-Verification commits to `npm run lint` passing, but lint fails with two
-`prettier/prettier` formatting errors on the newly added lines. Tests
-(`npm run test` — 228 passed, 3 skipped) and `npm run typecheck` (0 errors)
-both pass. Note the PR body claims pre-commit eslint passed; the committed file
-nonetheless fails `npm run lint` deterministically, and per AGENTS.md lint is a
-hard merge gate enforced by CI.
+- `exportFilenameStem` builds `analysis-<id>-<YYYY-MM-DD>` from an id + ISO
+  timestamp (test line 7).
+- `exportFilenameStem` derives the date in UTC from a non-UTC offset (test
+  line 11).
+- `formatCreatedDate` returns the `YYYY-MM-DD` UTC slice of an ISO timestamp
+  (test line 18), plus a benign extra case normalizing a non-UTC offset (line
+  22).
 
-## Automated Verification Results
+No production code was modified, honoring the plan's "What We're NOT Doing"
+constraints (no `format.ts` changes, no `formatRequirementsLabel` tests, no
+constants tests). The test imports the helpers from `@/lib/export/format` and
+lives at the committed path, matching the Manual Verification checkbox and the
+sibling test structure in `tests/lib/export/` (`markdown.test.ts`,
+`redact.test.ts`).
 
-| Command | Result |
-|---------|--------|
-| `npm run test` | PASS — Test Files 29 passed \| 3 skipped; Tests 228 passed \| 3 skipped |
-| `npm run typecheck` | PASS — 0 errors, 0 warnings, 5 hints |
-| `npm run lint` | **FAIL** — 2 `prettier/prettier` errors in `tests/lib/export/format.test.ts` (lines 8, 15) |
+Non-plan files in the diff (`change.md`, `plan.md`, `reviews/impl-review.md`)
+are the change's own workflow artifacts, not scope creep.
+
+An earlier CI run flagged a `prettier/prettier` lint failure on the new test
+file; commit `f0681b5` fixed the formatting, and all three Automated
+Verification commands now pass on this HEAD.
+
+## Success Criteria Verification
+
+| Check | Result |
+|-------|--------|
+| `npm run test` | PASS — 228 passed, 3 skipped (targeted file: 4/4 passed) |
+| `npm run lint` | PASS — no ESLint errors |
+| `npm run typecheck` | PASS — 129 files, 0 errors, 0 warnings |
+| Manual: test file at `tests/lib/export/format.test.ts` importing from `@/lib/export/format` | PASS — confirmed |
 
 ## Findings
 
-### F1 — `npm run lint` fails on prettier formatting in the new test file
-
-- **Severity**: ⚠️ WARNING
-- **Impact**: 🏃 LOW — quick decision; fix is obvious and narrowly scoped
-- **Dimension**: Success Criteria
-- **Location**: tests/lib/export/format.test.ts:8
-- **Detail**: The plan's Automated Verification commits to `npm run lint`
-  passing, but it exits non-zero with two `prettier/prettier` errors. Prettier
-  wants each ``expect(...).toBe(\`analysis-${ANALYSIS_ID}-...\`)`` argument
-  collapsed onto a single line; the file wraps them across lines (line 8 and
-  line 15). Per AGENTS.md, lint is a hard rule enforced by CI, so the PR would
-  be blocked at merge despite passing tests and typecheck.
-- **Fix**: Run `npm run lint:fix` (or `npm run format`) to collapse the two
-  wrapped `.toBe(...)` arguments onto single lines, then re-commit.
-- **Decision**: PENDING
+No findings. The implementation matches the plan with no drift, no scope
+creep, no safety concerns, and full coverage of the declared test commitments.
 
 <!-- End of report -->
