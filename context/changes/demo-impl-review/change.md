@@ -1,9 +1,9 @@
 ---
 change_id: demo-impl-review
 title: Add unit tests for export filename/date formatting helpers
-status: planned
+status: impl_reviewed
 created: 2026-07-01
-updated: 2026-07-01
+updated: 2026-07-02
 archived_at: null
 ---
 
