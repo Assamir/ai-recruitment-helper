@@ -29,9 +29,20 @@ function symbolRatio(nonWhitespace: string): number {
   return symbols / nonWhitespace.length;
 }
 
+/**
+ * Segment text into prose-candidate lines. Splits on newlines first, then on
+ * sentence terminators and bullet markers. The extra split matters because some
+ * PDF extractors (e.g. unpdf with mergePages) return the whole document as a
+ * single newline-free line — without it, well-formed CVs collapse to one
+ * "line" and fail the MIN_PROSE_LINES gate.
+ */
+function segmentLines(text: string): string[] {
+  return text.split(/\n|(?<=[.!?])\s+|\s*•\s*/);
+}
+
 function countProseLines(text: string): number {
   let proseLines = 0;
-  for (const line of text.split("\n")) {
+  for (const line of segmentLines(text)) {
     const trimmed = line.trim();
     if (trimmed.length === 0) continue;
     const lineNonWs = trimmed.replace(/\s/g, "");

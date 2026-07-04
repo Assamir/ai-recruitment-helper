@@ -53,6 +53,17 @@ Sam Ortiz
 QA tester with Playwright Cypress API testing design pipelines release quality.
 `.trim();
 
+/**
+ * Real CV extracted as a single newline-free line (unpdf mergePages style).
+ * Regression: prose-line detection must survive missing line breaks.
+ */
+const SINGLE_LINE_CV_TEXT =
+  "PROFILE Over years of API testing I gained experience in SOAP and REST testing including " +
+  "writing own test frameworks. I also conduct training courses on how to build automation tests " +
+  "using Groovy and ReadyAPI. My latest achievement is my own framework for SOAP and REST built " +
+  "on IntelliJ. EXPERIENCE Senior Test Automation Engineer at EPAM Systems developing Java API " +
+  "tests in an insurance domain and preparing test cases in Jira for automation.";
+
 describe("assertUsableCvText", () => {
   it("passes a clean CV string", () => {
     expect(() => {
@@ -89,6 +100,14 @@ describe("assertUsableCvText", () => {
     expect(assessCvTextQuality(JUST_ABOVE_THRESHOLD).usable).toBe(true);
     expect(() => {
       assertUsableCvText(JUST_ABOVE_THRESHOLD);
+    }).not.toThrow();
+  });
+
+  it("passes a real CV extracted as a single newline-free line", () => {
+    expect(SINGLE_LINE_CV_TEXT).not.toContain("\n");
+    expect(assessCvTextQuality(SINGLE_LINE_CV_TEXT).usable).toBe(true);
+    expect(() => {
+      assertUsableCvText(SINGLE_LINE_CV_TEXT);
     }).not.toThrow();
   });
 });
