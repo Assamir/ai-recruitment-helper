@@ -1,8 +1,6 @@
-# 10x Astro Starter
+# AI Recruitment Helper
 
-![](./public/template.png)
-
-A modern, opinionated starter template for building fast, accessible web applications.
+A privacy-preserving web app that helps internal IT recruiters prepare for QA candidate interviews. Recruiters upload a CV (`.pdf`/`.docx`) and select a QA job profile (or paste custom requirements); the app anonymizes the candidate's PII, runs an LLM-based audit of the CV against the requirements, and returns a structured interview question set categorized by anomaly type (missing elements, contradictions, vague claims, red flags) — each with context and a suggested expected answer.
 
 ## Tech Stack
 
@@ -10,7 +8,8 @@ A modern, opinionated starter template for building fast, accessible web applica
 - [React](https://react.dev/) v19 - UI library for interactive components
 - [TypeScript](https://www.typescriptlang.org/) v5 - Type-safe JavaScript
 - [Tailwind CSS](https://tailwindcss.com/) v4 - Utility-first CSS framework
-- [Supabase](https://supabase.com/) - Authentication and backend-as-a-service
+- [Supabase](https://supabase.com/) - Authentication and Postgres backend
+- [Vercel AI SDK](https://ai-sdk.dev/) - LLM integration (LM Studio local or OpenRouter cloud)
 - [Cloudflare Workers](https://workers.cloudflare.com/) - Edge deployment runtime
 
 ## Prerequisites
@@ -23,8 +22,8 @@ A modern, opinionated starter template for building fast, accessible web applica
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/przeprogramowani/10x-astro-starter.git
-cd 10x-astro-starter
+git clone https://github.com/Assamir/ai-recruitment-helper.git
+cd ai-recruitment-helper
 ```
 
 2. Install dependencies:
@@ -49,33 +48,61 @@ npm run dev
 
 ## Available Scripts
 
-- `npm run dev` - Start development server (Cloudflare workerd runtime)
+- `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build
 - `npm run lint` - Run ESLint with type-checked rules
 - `npm run lint:fix` - Auto-fix ESLint issues
+- `npm run typecheck` - Run `astro sync && astro check`
 - `npm run format` - Run Prettier
+- `npm run test` - Run Vitest unit tests
+- `npm run test:watch` - Run Vitest in watch mode
+- `npm run test:e2e` - Run Playwright end-to-end tests
+- `npm run test:e2e:ui` - Run Playwright tests in UI mode
+- `npm run db:types` - Regenerate Supabase TypeScript types
+- `npm run deploy` - Build and deploy to Cloudflare Workers
+- `npm run rollback` - Revert to the previous Worker version
 
 ## Project Structure
 
 ```md
 .
 ├── src/
+│ ├── components/ # UI components (Astro & React), incl. auth/, ui/, analysis/
 │ ├── db/ # Generated database types
 │ ├── layouts/ # Astro layouts
+│ ├── lib/ # Domain logic: llm/, analysis/, anonymizer/, cv-parser/, export/, linkedin/, supabase.ts
 │ ├── pages/ # Astro pages
 │ │ └── api/ # API endpoints
-│ ├── components/ # UI components (Astro & React)
-│ └── assets/ # Static assets
+│ ├── styles/ # Global styles
+│ └── middleware.ts # Auth route guard
 ├── supabase/
 │ └── migrations/ # Supabase SQL migrations
+├── tests/ # Vitest unit tests and Playwright e2e tests
 ├── public/ # Public assets
 ├── wrangler.jsonc # Cloudflare Workers config
 ```
 
+## LLM Configuration
+
+The LLM client lives in `src/lib/llm/` and supports two providers, switchable via the `LLM_PROVIDER` env var:
+
+- `lmstudio` (default) — local [LM Studio](https://lmstudio.ai/) at `http://localhost:1234/v1`, no API key needed
+- `openrouter` — cloud provider, requires `OPENROUTER_API_KEY`
+
+| Variable             | Description                                                        |
+| -------------------- | ----------------------------------------------------------------- |
+| `LLM_PROVIDER`       | `lmstudio` (default) or `openrouter`                              |
+| `LLM_MODEL`          | Model identifier for the selected provider                        |
+| `OPENROUTER_API_KEY` | Required only when `LLM_PROVIDER=openrouter`                      |
+
+`getLLMConfig()` returns `null` when the selected provider's credentials are missing, so every call site must handle `null`. For production Workers, set secrets via `npx wrangler secret put <KEY>`.
+
+The viability test endpoint at `POST /api/llm/health` sends a synthetic CV through the LLM and returns timing metrics. It requires authentication (returns 401 JSON without it).
+
 ## Supabase Configuration
 
-This project uses [Supabase](https://supabase.com/) for authentication. Environment variables are declared via Astro's `astro:env` schema and are treated as **server-only secrets** — they are never exposed to the client.
+This project uses [Supabase](https://supabase.com/) for authentication and its Postgres database. Environment variables are declared via Astro's `astro:env` schema and are treated as **server-only secrets** — they are never exposed to the client.
 
 ### First-time setup (local, no cloud project needed)
 
@@ -166,14 +193,16 @@ By default Supabase requires email confirmation before a user can sign in. To sk
 
 Users can then sign in immediately after sign-up without clicking a confirmation link.
 
-### Auth routes
+### Auth & app routes
 
 | Route                 | Description                                                             |
 | --------------------- | ----------------------------------------------------------------------- |
 | `/auth/signin`        | Email/password sign-in form                                             |
 | `/auth/signup`        | Email/password sign-up form                                             |
 | `/auth/confirm-email` | Post-signup "check your inbox" page                                     |
-| `/dashboard`          | Example protected page (redirects to `/auth/signin` if unauthenticated) |
+| `/dashboard`          | Protected list of analyses (redirects to `/auth/signin` if unauthenticated) |
+| `/dashboard/new`      | Upload a CV and start a new analysis                                    |
+| `/dashboard/[id]`     | View a single analysis and its generated question set                  |
 
 Route protection is handled in `src/middleware.ts`. Add paths to the `PROTECTED_ROUTES` array there to require authentication.
 
@@ -181,23 +210,23 @@ Route protection is handled in `src/middleware.ts`. Add paths to the `PROTECTED_
 
 This project deploys to [Cloudflare Workers](https://workers.cloudflare.com/).
 
-1. Build the project:
+Build and deploy in one step:
 
 ```bash
-npm run build
+npm run deploy
 ```
 
-2. Deploy with Wrangler:
+To revert to the previous Worker version:
 
 ```bash
-npx wrangler deploy
+npm run rollback
 ```
 
-Set `SUPABASE_URL` and `SUPABASE_KEY` as secrets in your Cloudflare dashboard or via `npx wrangler secret put`.
+Set `SUPABASE_URL`, `SUPABASE_KEY`, and any LLM secrets in your Cloudflare dashboard or via `npx wrangler secret put`.
 
 ## CI
 
-GitHub Actions runs lint + build on every push and PR to `master`. Configure `SUPABASE_URL` and `SUPABASE_KEY` as repository secrets in GitHub for the build step.
+GitHub Actions runs `lint → typecheck → test → build` on every push and PR to `master`. On push to `master`, a deploy job runs `wrangler deploy` to production; on PRs, a preview job runs `wrangler versions upload` to create a preview URL. Configure `SUPABASE_URL` and `SUPABASE_KEY` as repository secrets in GitHub for the build step.
 
 ## License
 
